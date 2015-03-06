@@ -22,7 +22,7 @@ public class GraphComputer {
 		Timer timer = Timer.newTimer();
 		timer.start();
 
-		try(Transaction tx = graph.beginTx()) {
+		try( Transaction tx = graph.beginTx() ) {
 			this.initPhase(algorithm);
 			this.main(algorithm);
 			this.collectResult(algorithm);
@@ -34,9 +34,8 @@ public class GraphComputer {
 
 	protected void initPhase(VertexAlgorithm algorithm) {
 		Timer.timer().start();
-		for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
+		for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) 
 			algorithm.init(n);
-		}
 		Timer.timer().stop();
 		log.info("Init: "+Timer.timer().totalTime());
 	}

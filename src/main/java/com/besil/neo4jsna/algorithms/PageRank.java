@@ -3,7 +3,6 @@ package com.besil.neo4jsna.algorithms;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
 
-import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
@@ -37,11 +36,11 @@ public class PageRank implements VertexAlgorithm {
 	@Override
 	public void apply(Node node) {
 		double secondMember = 0.0;
-		for( Relationship rin : node.getRelationships(Direction.INCOMING) ) {
+		for( Relationship rin : node.getRelationships() ) {
 			Node neigh = rin.getOtherNode(node);
 			
 			double neighRank = (double) neigh.getProperty(attName);
-			secondMember += neighRank / neigh.getDegree(Direction.OUTGOING);
+			secondMember += neighRank / neigh.getDegree();
 		}
 		
 		secondMember *= this.dampingFactor;
@@ -55,7 +54,7 @@ public class PageRank implements VertexAlgorithm {
 
 	@Override
 	public int getMaxIterations() {
-		return 20;
+		return 40;
 	}
 
 	@Override
