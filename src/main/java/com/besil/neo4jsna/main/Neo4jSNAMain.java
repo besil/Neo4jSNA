@@ -14,7 +14,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.besil.neo4jsna.algorithms.ConnectedComponents;
 import com.besil.neo4jsna.algorithms.PageRank;
-import com.besil.neo4jsna.computer.GraphComputer;
+import com.besil.neo4jsna.computer.GraphEngine;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
@@ -33,18 +33,18 @@ public class Neo4jSNAMain {
 		System.out.println("Node count: "+nodeCount);
 		System.out.println("Rel count: "+relsCount);
 	
-		GraphComputer computer = new GraphComputer(g);
+		GraphEngine engine = new GraphEngine(g);
 		
 		System.out.println("PageRank");
 		PageRank pr = new PageRank(g);
-		computer.execute(pr);
+		engine.execute(pr);
 		Long2DoubleMap ranks = pr.getResult();
 		Optional<Double> res = ranks.values().parallelStream().reduce( (x, y) -> x + y );
 		System.out.println("Check PageRank sum is 1.0: "+ res.get());
 
 		System.out.println("Connected Components");
 		ConnectedComponents cc = new ConnectedComponents();
-		computer.execute(cc);
+		engine.execute(cc);
 		Long2LongMap components = cc.getResult();
 		int totalComponents = new LongOpenHashSet( components.values() ).size();
 		System.out.println("There are "+ totalComponents+ " different components");

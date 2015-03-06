@@ -9,12 +9,12 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.besil.neo4jsna.utils.Timer;
 
-public class GraphComputer {
-	private final Logger log = Logger.getLogger(GraphComputer.class.getName()); 
+public class GraphEngine {
+	private final Logger log = Logger.getLogger(GraphEngine.class.getName()); 
 
 	protected GraphDatabaseService graph;
 
-	public GraphComputer(GraphDatabaseService g) {	
+	public GraphEngine(GraphDatabaseService g) {	
 		this.graph = g;
 	}
 
