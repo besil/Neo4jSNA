@@ -11,7 +11,7 @@ import Utils.Timer;
 
 public class GraphComputer {
 	private final Logger log = Logger.getLogger(GraphComputer.class.getName()); 
-	
+
 	protected GraphDatabaseService graph;
 
 	public GraphComputer(GraphDatabaseService g) {	
@@ -19,18 +19,23 @@ public class GraphComputer {
 	}
 
 	public void execute(VertexAlgorithm algorithm) {
-		this.initPhase(algorithm);
-		this.main(algorithm);
-		this.collectResult(algorithm);
+		Timer timer = Timer.newTimer();
+		timer.start();
+
+		try(Transaction tx = graph.beginTx()) {
+			this.initPhase(algorithm);
+			this.main(algorithm);
+			this.collectResult(algorithm);
+		}
+
+		timer.stop();
+		log.info("Execute: "+timer.totalTime());
 	}
 
 	protected void initPhase(VertexAlgorithm algorithm) {
 		Timer.timer().start();
-		try(Transaction tx = graph.beginTx()) {
-			for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
-				algorithm.init(n);
-			}
-			tx.success();
+		for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
+			algorithm.init(n);
 		}
 		Timer.timer().stop();
 		log.info("Init: "+Timer.timer().totalTime());
@@ -38,13 +43,10 @@ public class GraphComputer {
 
 	protected void main(VertexAlgorithm algorithm) {
 		Timer.timer().start();
-		try(Transaction tx=graph.beginTx()) {
-			for(int it=0; it<algorithm.getMaxIterations(); it++) {
-				for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
-					algorithm.apply(n);
-				}
+		for(int it=0; it<algorithm.getMaxIterations(); it++) {
+			for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
+				algorithm.apply(n);
 			}
-			tx.success();
 		}
 		Timer.timer().stop();
 		log.info("Main: "+Timer.timer().totalTime());
@@ -52,11 +54,8 @@ public class GraphComputer {
 
 	public void collectResult(VertexAlgorithm algorithm) {
 		Timer.timer().start();
-		try(Transaction tx=graph.beginTx()) {
-			for(Node n: GlobalGraphOperations.at(graph).getAllNodes()) {
-				algorithm.collectResult(n);
-			}
-			tx.success();
+		for(Node n: GlobalGraphOperations.at(graph).getAllNodes()) {
+			algorithm.collectResult(n);
 		}
 		Timer.timer().stop();
 		log.info("Collect: "+Timer.timer().totalTime());

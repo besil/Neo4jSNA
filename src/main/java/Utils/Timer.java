@@ -9,6 +9,10 @@ public class Timer {
 			instance = new Timer();
 		return instance;
 	}
+	
+	public static Timer newTimer() {
+		return new Timer();
+	}
 
 	protected final Clock clock;
 	public long ts, te;
