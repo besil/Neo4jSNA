@@ -1,8 +1,8 @@
 package com.besil.neo4jsna.main;
 
-import it.unimi.dsi.fastutil.longs.Long2LongMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
+import java.util.Optional;
+
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
@@ -10,7 +10,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import com.besil.neo4jsna.algorithms.ConnectedComponents;
+import com.besil.neo4jsna.algorithms.PageRank;
 import com.besil.neo4jsna.computer.GraphComputer;
 
 public class Neo4jSNAMain {
@@ -31,19 +31,14 @@ public class Neo4jSNAMain {
 		System.out.println(relsCount);
 	
 		
-		ConnectedComponents cc = new ConnectedComponents();
+		PageRank pr = new PageRank(g);
 		GraphComputer computer = new GraphComputer(g);
 		
+		computer.execute(pr);
 		
-		computer.execute(cc);
-		
-		Long2LongMap components = cc.getResult();
-//		for(Entry<Long, Long> e : components.entrySet()) {
-//			System.out.println(e.getKey()+" -> "+e.getValue());
-//		}
-		LongSet s = new LongOpenHashSet( components.values() );
-		
-		System.out.println(s.size());
+		Long2DoubleMap ranks = pr.getResult();
+		Optional<Double> res = ranks.values().parallelStream().reduce( (x, y) -> x + y );
+		System.out.println(res.get());
 		
 		g.shutdown();
 	}

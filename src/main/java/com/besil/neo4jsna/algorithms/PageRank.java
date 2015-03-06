@@ -41,7 +41,7 @@ public class PageRank implements VertexAlgorithm {
 			Node neigh = rin.getOtherNode(node);
 			
 			double neighRank = (double) neigh.getProperty(attName);
-			secondMember += neighRank + neigh.getDegree(Direction.OUTGOING);
+			secondMember += neighRank / neigh.getDegree(Direction.OUTGOING);
 		}
 		
 		secondMember *= this.dampingFactor;
