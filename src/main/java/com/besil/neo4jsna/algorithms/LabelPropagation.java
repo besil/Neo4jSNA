@@ -1,9 +1,9 @@
 package com.besil.neo4jsna.algorithms;
 
-import java.util.Map.Entry;
-
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+
+import java.util.Map.Entry;
 
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
