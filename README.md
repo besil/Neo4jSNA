@@ -14,7 +14,7 @@ The implemented algorithms are, for now:
 
 # QuickStart
 
-'''Java
+```Java
 String cinea = "data/tmp/cineasts";
 String path = cinea;
 long nodeCount, relsCount;
@@ -46,4 +46,4 @@ int totalComponents = new LongOpenHashSet( components.values() ).size();
 System.out.println("There are "+ totalComponents+ " different components");
 
 g.shutdown();
-'''
+```
