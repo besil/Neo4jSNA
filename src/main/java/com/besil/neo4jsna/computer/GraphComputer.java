@@ -7,7 +7,7 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import Utils.Timer;
+import com.besil.neo4jsna.utils.Timer;
 
 public class GraphComputer {
 	private final Logger log = Logger.getLogger(GraphComputer.class.getName()); 

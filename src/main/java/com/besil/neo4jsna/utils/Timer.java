@@ -1,4 +1,4 @@
-package Utils;
+package com.besil.neo4jsna.utils;
 
 import java.time.Clock;
 

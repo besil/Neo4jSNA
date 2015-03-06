@@ -1,45 +1,71 @@
 package com.besil.neo4jsna.algorithms;
 
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
+import it.unimi.dsi.fastutil.longs.Long2DoubleOpenHashMap;
+
+import org.neo4j.graphdb.Direction;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.Transaction;
+import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.besil.neo4jsna.computer.VertexAlgorithm;
 
 public class PageRank implements VertexAlgorithm {
-
+	protected final String attName = "PageRank";
+	protected Long2DoubleMap rankMap;
+	protected long nodeCount = 0;
+	protected double dampingFactor = 0.85;
+	protected double firstMember;
+	
+	public PageRank(GraphDatabaseService g) {
+		rankMap = new Long2DoubleOpenHashMap();
+		try(Transaction tx = g.beginTx()) {
+			for(@SuppressWarnings("unused") Node n : GlobalGraphOperations.at(g).getAllNodes())
+				nodeCount += 1;
+			tx.success();
+		}
+		this.firstMember = ( 1.0 - this.dampingFactor ) / this.nodeCount;
+	}
+	
 	@Override
 	public void init(Node node) {
-		// TODO Auto-generated method stub
-		
+		node.setProperty(attName, 1.0 / this.nodeCount);
 	}
 
 	@Override
 	public void apply(Node node) {
-		// TODO Auto-generated method stub
+		double secondMember = 0.0;
+		for( Relationship rin : node.getRelationships(Direction.INCOMING) ) {
+			Node neigh = rin.getOtherNode(node);
+			
+			double neighRank = (double) neigh.getProperty(attName);
+			secondMember += neighRank + neigh.getDegree(Direction.OUTGOING);
+		}
 		
+		secondMember *= this.dampingFactor;
+		node.setProperty(attName, firstMember + secondMember);
 	}
 
 	@Override
-	public Object collectResult(Node node) {
-		// TODO Auto-generated method stub
-		return null;
+	public void collectResult(Node node) {
+		rankMap.put(node.getId(), (double) node.getProperty(attName));
 	}
 
 	@Override
 	public int getMaxIterations() {
-		// TODO Auto-generated method stub
-		return 0;
+		return 20;
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return "PageRank";
 	}
 
 	@Override
-	public Object getResult() {
-		// TODO Auto-generated method stub
-		return null;
+	public Long2DoubleMap getResult() {
+		return rankMap;
 	}
 
 }

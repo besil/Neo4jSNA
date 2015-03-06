@@ -47,8 +47,8 @@ public class ConnectedComponents implements VertexAlgorithm {
 	}
 	
 	@Override
-	public Object collectResult(Node node) {
-		return this.componentsMap.put(node.getId(), (long) node.getProperty(this.attName)); 
+	public void collectResult(Node node) {
+		this.componentsMap.put(node.getId(), (long) node.getProperty(this.attName)); 
 	}
 
 	public Long2LongMap getResult() {
