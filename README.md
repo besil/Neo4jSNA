@@ -8,7 +8,8 @@ The implemented algorithms are, for now:
 - [x] Page Rank
 - [x] Connected Components
 - [ ] Triangle count
-- [ ] Label Propagation (Community Detection)
-- [ ] Louvain Method (Community Detection)
+- [ ] Community Detection
+	- [ ] Label Propagation (Community Detection)
+	- [ ] Louvain Method (Community Detection)
 
 
