@@ -8,7 +8,7 @@ import org.neo4j.graphdb.Relationship;
 
 import com.besil.neo4jsna.computer.VertexAlgorithm;
 
-public class ConnectedComponents extends VertexAlgorithm {
+public class ConnectedComponents implements VertexAlgorithm {
 	protected Long2LongMap componentsMap;
 	protected String attName = "ConnectedComponents";
 
