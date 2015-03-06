@@ -1,5 +1,6 @@
 package com.besil.neo4jsna.computer;
 
+import java.time.Clock;
 import java.util.logging.Logger;
 
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -9,7 +10,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 public class GraphComputer {
 	private final Logger log = Logger.getLogger(GraphComputer.class.getName()); 
-
+	
 	protected GraphDatabaseService graph;
 
 	public GraphComputer(GraphDatabaseService g) {	
@@ -23,6 +24,7 @@ public class GraphComputer {
 	}
 
 	protected void initPhase(VertexAlgorithm algorithm) {
+		
 		try(Transaction tx = graph.beginTx()) {
 			for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
 				algorithm.init(n);
@@ -34,11 +36,11 @@ public class GraphComputer {
 	protected void main(VertexAlgorithm algorithm) {
 		try(Transaction tx=graph.beginTx()) {
 			for(int it=0; it<algorithm.getMaxIterations(); it++) {
-				log.info("Iteration "+it);
 				for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
 					algorithm.apply(n);
 				}
 			}
+			tx.success();
 		}
 	}
 
@@ -47,6 +49,7 @@ public class GraphComputer {
 			for(Node n: GlobalGraphOperations.at(graph).getAllNodes()) {
 				algorithm.collectResult(n);
 			}
+			tx.success();
 		}
 	}
 
