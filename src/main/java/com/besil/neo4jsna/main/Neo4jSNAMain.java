@@ -1,7 +1,5 @@
 package com.besil.neo4jsna.main;
 
-import java.util.Map.Entry;
-
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
@@ -17,8 +15,6 @@ import com.besil.neo4jsna.computer.GraphComputer;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
-		@SuppressWarnings("unused")
-		String drwho = "data/tmp/drwho";
 		String cinea = "data/tmp/cineasts";
 		
 		String path = cinea;
@@ -42,9 +38,9 @@ public class Neo4jSNAMain {
 		computer.execute(cc);
 		
 		Long2LongMap components = cc.getResult();
-		for(Entry<Long, Long> e : components.entrySet()) {
-			System.out.println(e.getKey()+" -> "+e.getValue());
-		}
+//		for(Entry<Long, Long> e : components.entrySet()) {
+//			System.out.println(e.getKey()+" -> "+e.getValue());
+//		}
 		LongSet s = new LongOpenHashSet( components.values() );
 		
 		System.out.println(s.size());

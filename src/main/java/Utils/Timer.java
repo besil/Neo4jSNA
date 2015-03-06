@@ -25,7 +25,10 @@ public class Timer {
 		te = clock.millis();
 	}
 	
-	public static final String totalTime(long ts, long te) {
-		return "Total time: "+ ( te - ts ) / 1000.0 + " s";
+	public String totalTime() {
+		String res = "Total time: "+ ( te - ts ) / 1000.0 + " s";
+		te = 0;
+		ts = 0;
+		return res;
 	}
 }
