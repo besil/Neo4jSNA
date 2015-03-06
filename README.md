@@ -4,10 +4,11 @@ Neo4jSNA is a Java based collection of useful algorithms for Social Network anal
 Actually, there's no support for Neo4j REST API: all algorithms are implemented using the Neo4j Embedded mode.
 
 The implemented algorithms are, for now:
-[x] Page Rank
-[x] Connected Components
-[ ] Triangle count
-[ ] Label Propagation (Community Detection)
-[ ] Louvain Method (Community Detection)
+
+- [x] Page Rank
+- [x] Connected Components
+- [ ] Triangle count
+- [ ] Label Propagation (Community Detection)
+- [ ] Louvain Method (Community Detection)
 
 
