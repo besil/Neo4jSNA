@@ -13,6 +13,7 @@ import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.besil.neo4jsna.algorithms.ConnectedComponents;
+import com.besil.neo4jsna.algorithms.LabelPropagation;
 import com.besil.neo4jsna.algorithms.PageRank;
 import com.besil.neo4jsna.computer.GraphEngine;
 
@@ -34,6 +35,13 @@ public class Neo4jSNAMain {
 		System.out.println("Rel count: "+relsCount);
 	
 		GraphEngine engine = new GraphEngine(g);
+		
+		System.out.println("Label Propagation CD");
+		LabelPropagation lp = new LabelPropagation();
+		engine.execute(lp);
+		Long2LongMap communityMap = lp.getResult();
+		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
+		System.out.println("There are "+totCommunities+" communities");
 		
 		System.out.println("PageRank");
 		PageRank pr = new PageRank(g);

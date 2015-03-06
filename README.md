@@ -12,8 +12,10 @@ The implemented algorithms are, for now:
 - [x] Connected Components
 - [ ] Triangle count
 - [ ] Community Detection
-	- [ ] Label Propagation
+	- [x] Label Propagation
 	- [ ] Louvain Method
+	- [ ] Modularity
+
 
 # QuickStart
 
@@ -40,6 +42,13 @@ engine.execute(cc);
 Map<Long, Long> components = cc.getResult();
 int totalComponents = new LongOpenHashSet( components.values() ).size();
 System.out.println("There are "+ totalComponents+ " different components");
+
+System.out.println("Label Propagation CD");
+LabelPropagation lp = new LabelPropagation();
+engine.execute(lp);
+Long2LongMap communityMap = lp.getResult();
+long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
+System.out.println("There are "+totCommunities+" communities");
 
 // Don't forget to shutdown the database
 g.shutdown();
