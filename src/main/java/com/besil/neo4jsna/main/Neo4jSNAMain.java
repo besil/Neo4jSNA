@@ -1,10 +1,10 @@
 package com.besil.neo4jsna.main;
 
-import java.util.Optional;
-
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+
+import java.util.Optional;
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
