@@ -3,50 +3,27 @@ package com.besil.neo4jsna.algorithms;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 
-import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.tooling.GlobalGraphOperations;
 
-public class ConnectedComponents {
-	protected GraphDatabaseService graph;
-	protected final String attName = "ConnectedComponent";
+import com.besil.neo4jsna.computer.VertexAlgorithm;
 
-	public ConnectedComponents(GraphDatabaseService g) {	
-		this.graph = g;
-		try(Transaction tx = this.graph.beginTx()) {
-			for(Node n : GlobalGraphOperations.at(g).getAllNodes() ) {
-				n.setProperty(attName, n.getId());
-			}
-			tx.success();
-		}
-	}
+public class ConnectedComponents extends VertexAlgorithm {
+	protected Long2LongMap componentsMap;
+	protected String attName = "ConnectedComponents";
 
-	public void execute(int iterations) {
-		try(Transaction tx = this.graph.beginTx()) {
-			for(int iteration=0; iteration<iterations; iteration++) {
-				System.out.println("Iteration "+iteration);
-				for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
-					long newComponent = this.getLowestComponent(n);
-					n.setProperty(attName, newComponent);
-				}
-			}
-			tx.success();
-		}
+	public ConnectedComponents() {
+		this.componentsMap = new Long2LongOpenHashMap();
 	}
 	
-	public Long2LongMap getResult() {
-		Long2LongMap res = new Long2LongOpenHashMap();
-		
-		try(Transaction tx = this.graph.beginTx()) {
-			for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
-				res.put(n.getId(), (long) n.getProperty(attName));
-			}
-			tx.success();
-		}
-		
-		return res;
+	@Override
+	public void init(Node node) {
+		node.setProperty(attName, node.getId());
+	}
+	@Override
+	public void apply(Node node) {
+		long newComponent = this.getLowestComponent(node);
+		node.setProperty(attName, newComponent);
 	}
 	
 	protected long getLowestComponent(Node n) {
@@ -58,5 +35,23 @@ public class ConnectedComponents {
 		}
 		return minComponent;
 	}
+	
+	@Override
+	public int getMaxIterations() {
+		return 20;
+	}
 
+	@Override
+	public String getName() {
+		return "Connected Components";
+	}
+	
+	@Override
+	public Object collectResult(Node node) {
+		return this.componentsMap.put(node.getId(), (long) node.getProperty(this.attName)); 
+	}
+
+	public Long2LongMap getResult() {
+		return this.componentsMap;
+	}
 }

@@ -11,14 +11,18 @@ import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.besil.neo4jsna.algorithms.ConnectedComponents;
+import com.besil.neo4jsna.computer.GraphComputer;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
-		String path = "data/tmp/cineasts_12k_movies_50k_actors.db";
+		@SuppressWarnings("unused")
+		String drwho = "data/tmp/drwho";
+		String cinea = "data/tmp/cineasts";
+		
+		String path = cinea;
 		long nodeCount, relsCount;
 		
 		GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
-//		GraphDatabaseService g = BatchInserters.batchDatabase(path);
 		try (Transaction tx = g.beginTx() ) {
 			nodeCount = IteratorUtil.count( GlobalGraphOperations.at(g).getAllNodes() );
 			relsCount = IteratorUtil.count( GlobalGraphOperations.at(g).getAllRelationships() );
@@ -29,11 +33,15 @@ public class Neo4jSNAMain {
 		System.out.println(relsCount);
 	
 		
-		ConnectedComponents cc = new ConnectedComponents(g);
-		cc.execute(10);
+		ConnectedComponents cc = new ConnectedComponents();
+		GraphComputer computer = new GraphComputer(g);
+		
+		
+		computer.execute(cc);
 		
 		Long2LongMap components = cc.getResult();
 		LongSet s = new LongOpenHashSet( components.values() );
+		
 		System.out.println(s.size());
 		
 		g.shutdown();
