@@ -1,7 +1,7 @@
 # Neo4jSNA
 
 Neo4jSNA is a Java based collection of useful algorithms for Social Network analysi, based on Neo4j, the graph database.
-Actually, there's no support for Neo4j REST API: all algorithms are implemented using the Neo4j Embedded mode.
+Actually, all algorithms are implemented using the Neo4j Embedded mode.
 
 The project uses Maven for dependency management. The other used library is the fastutil project (http://fastutil.di.unimi.it/):
 if you don't know it yet, you should definitely check it.
