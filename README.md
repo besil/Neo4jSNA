@@ -28,6 +28,13 @@ GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
 // Declare the GraphEngine on the database instance
 GraphEngine engine = new GraphEngine(g);
 
+System.out.println("Triangle Count");
+TriangleCount tc = new TriangleCount();
+engine.execute(tc);
+Long2LongMap triangleCount = tc.getResult();
+Optional<Long> totalTriangles = triangleCount.values().stream().reduce( (x, y) -> x + y );
+System.out.println("There are "+totalTriangles.get()+" triangles");
+
 System.out.println("PageRank");
 PageRank pr = new PageRank(g);
 // Starts the algorithm on the given graph g
