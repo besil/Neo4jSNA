@@ -8,13 +8,13 @@ if you don't know it yet, you should definitely check it.
 
 The implemented algorithms are, for now:
 
-- [x] Page Rank
+- [x] Page Rank	(http://en.wikipedia.org/wiki/PageRank)
 - [x] Connected Components
 - [ ] Triangle count
-- [ ] Community Detection
-	- [x] Label Propagation
-	- [ ] Louvain Method
-	- [ ] Modularity
+- [ ] Community Detection (http://arxiv.org/pdf/0906.0612v2.pdf)
+	- [x] Label Propagation	(http://arxiv.org/pdf/0709.2938v1.pdf)
+	- [ ] Louvain Method (http://arxiv.org/pdf/0803.0476v2.pdf)
+	- [ ] Modularity (http://arxiv.org/pdf/physics/0602124.pdf)
 
 
 # QuickStart
