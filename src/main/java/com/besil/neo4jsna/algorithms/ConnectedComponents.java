@@ -6,7 +6,7 @@ import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import com.besil.neo4jsna.computer.VertexAlgorithm;
+import com.besil.neo4jsna.engine.VertexAlgorithm;
 
 public class ConnectedComponents implements VertexAlgorithm {
 	protected Long2LongMap componentsMap;

@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
 
-import com.besil.neo4jsna.computer.VertexAlgorithm;
+import com.besil.neo4jsna.engine.VertexAlgorithm;
 
 public class LabelPropagation implements VertexAlgorithm {
 	protected Long2LongMap communityMap;

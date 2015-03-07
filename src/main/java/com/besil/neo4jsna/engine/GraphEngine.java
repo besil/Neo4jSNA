@@ -1,7 +1,9 @@
-package com.besil.neo4jsna.computer;
+package com.besil.neo4jsna.engine;
 
 import java.util.logging.Logger;
 
+import org.neo4j.cypher.javacompat.ExecutionEngine;
+import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
@@ -11,11 +13,20 @@ import com.besil.neo4jsna.utils.Timer;
 
 public class GraphEngine {
 	private final Logger log = Logger.getLogger(GraphEngine.class.getName()); 
-
 	protected GraphDatabaseService graph;
-
+	protected ExecutionEngine engine;
+	
 	public GraphEngine(GraphDatabaseService g) {	
 		this.graph = g;
+		this.engine = new ExecutionEngine(g);
+	}
+	
+	public void execute(CypherAlgorithm algorithm) {
+		Timer timer = Timer.newTimer();
+		ExecutionResult result = engine.execute(algorithm.getQuery());
+		algorithm.collectResult(result);
+		timer.stop();
+		log.info(algorithm.getName()+" execution: "+timer.totalTime());
 	}
 
 	public void execute(VertexAlgorithm algorithm) {

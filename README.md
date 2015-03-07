@@ -1,6 +1,6 @@
 # Neo4jSNA
 
-Neo4jSNA is a Java based collection of useful algorithms for Social Network analysi, based on Neo4j, the graph database.
+Neo4jSNA is a Java based collection of useful algorithms for Social Network analysis, based on Neo4j, the graph database.
 Actually, all algorithms are implemented using the Neo4j Embedded mode.
 
 The project uses Maven for dependency management. The other used library is the fastutil project (http://fastutil.di.unimi.it/):
@@ -10,7 +10,7 @@ The implemented algorithms are, for now:
 
 - [x] Page Rank	(http://en.wikipedia.org/wiki/PageRank)
 - [x] Connected Components
-- [ ] Triangle count
+- [x] Triangle count
 - [ ] Community Detection (http://arxiv.org/pdf/0906.0612v2.pdf)
 	- [x] Label Propagation	(http://arxiv.org/pdf/0709.2938v1.pdf)
 	- [ ] Louvain Method (http://arxiv.org/pdf/0803.0476v2.pdf)

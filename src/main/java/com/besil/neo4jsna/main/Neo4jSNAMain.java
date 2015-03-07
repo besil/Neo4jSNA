@@ -15,7 +15,8 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import com.besil.neo4jsna.algorithms.ConnectedComponents;
 import com.besil.neo4jsna.algorithms.LabelPropagation;
 import com.besil.neo4jsna.algorithms.PageRank;
-import com.besil.neo4jsna.computer.GraphEngine;
+import com.besil.neo4jsna.algorithms.TriangleCount;
+import com.besil.neo4jsna.engine.GraphEngine;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
@@ -35,6 +36,13 @@ public class Neo4jSNAMain {
 		System.out.println("Rel count: "+relsCount);
 	
 		GraphEngine engine = new GraphEngine(g);
+		
+		System.out.println("Triangle Count");
+		TriangleCount tc = new TriangleCount();
+		engine.execute(tc);
+		Long2LongMap triangleCount = tc.getResult();
+		Optional<Long> totalTriangles = triangleCount.values().stream().reduce( (x, y) -> x + y );
+		System.out.println("There are "+totalTriangles.get()+" triangles");
 		
 		System.out.println("Label Propagation CD");
 		LabelPropagation lp = new LabelPropagation();

@@ -9,7 +9,7 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import com.besil.neo4jsna.computer.VertexAlgorithm;
+import com.besil.neo4jsna.engine.VertexAlgorithm;
 
 public class PageRank implements VertexAlgorithm {
 	protected final String attName = "PageRank";

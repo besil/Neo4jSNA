@@ -1,4 +1,4 @@
-package com.besil.neo4jsna.computer;
+package com.besil.neo4jsna.engine;
 
 import org.neo4j.graphdb.Node;
 
