@@ -12,7 +12,7 @@ import com.besil.neo4jsna.engine.VertexAlgorithm;
 
 public class LabelPropagation implements VertexAlgorithm {
 	protected Long2LongMap communityMap;
-	protected final String attName = "labelPropagationCD";
+	protected final String attName = "community";
 	
 	public LabelPropagation() {
 		this.communityMap = new Long2LongOpenHashMap();

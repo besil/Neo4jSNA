@@ -6,9 +6,11 @@ import org.neo4j.cypher.javacompat.ExecutionEngine;
 import org.neo4j.cypher.javacompat.ExecutionResult;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import com.besil.neo4jsna.measures.Modularity;
 import com.besil.neo4jsna.utils.Timer;
 
 public class GraphEngine {
@@ -19,6 +21,18 @@ public class GraphEngine {
 	public GraphEngine(GraphDatabaseService g) {	
 		this.graph = g;
 		this.engine = new ExecutionEngine(g);
+	}
+	
+	public void execute(Modularity modularity) {
+		try( Transaction tx = graph.beginTx() ) {
+			for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
+				modularity.compute(n);
+			}
+			for(Relationship r : GlobalGraphOperations.at(graph).getAllRelationships()) {
+				modularity.compute(r);
+			}
+			tx.success();
+		}
 	}
 	
 	public void execute(CypherAlgorithm algorithm) {
@@ -37,6 +51,7 @@ public class GraphEngine {
 			this.initPhase(algorithm);
 			this.main(algorithm);
 			this.collectResult(algorithm);
+			tx.success();
 		}
 
 		timer.stop();
