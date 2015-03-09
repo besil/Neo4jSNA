@@ -10,6 +10,8 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
+import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 import com.besil.neo4jsna.measures.Modularity;
 import com.besil.neo4jsna.utils.Timer;
 

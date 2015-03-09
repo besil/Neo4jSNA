@@ -7,7 +7,10 @@ import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-public class Modularity {
+import com.besil.neo4jsna.engine.algorithm.SingleNodeScanAlgorithm;
+import com.besil.neo4jsna.engine.algorithm.SingleRelationshipScanAlgorithm;
+
+public class Modularity implements SingleNodeScanAlgorithm, SingleRelationshipScanAlgorithm {
 	protected final String attName = "community";
 	protected double eii=0.0, ai=0.0;
 	protected double divisor = 0.0;
@@ -34,16 +37,15 @@ public class Modularity {
 		}
 	}
 
-//	if(graph.isDirected()) {
-//		ai	= ai / Math.pow(divisor, 2);
-//		eii	= eii / divisor;
-//	} else {
-//		ai	= ai / (4*Math.pow(divisor, 2));
-//		eii	= eii / (2*divisor);
-//	}
-	
-	public double getResult() {
-		return ( ai / Math.pow(divisor, 2) ) - ( eii / divisor );
+	@Override
+	public String getName() {
+		return "Modularity";
+	}
+
+	@Override
+	public Double getResult() {
+		return ( ai / Math.pow(divisor, 2) ) - ( eii / divisor );				// Directed
+//		// return ( ai / (4*Math.pow(divisor, 2)) ) - ( eii / (2*divisor) );	// Undirected
 	}
 
 }

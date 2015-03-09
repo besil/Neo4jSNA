@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.neo4j.cypher.javacompat.ExecutionResult;
 
-import com.besil.neo4jsna.engine.CypherAlgorithm;
+import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
 
 public class TriangleCount implements CypherAlgorithm {
 	protected Long2LongMap triangleMap;
