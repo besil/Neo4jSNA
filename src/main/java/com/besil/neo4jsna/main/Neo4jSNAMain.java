@@ -15,6 +15,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import com.besil.neo4jsna.algorithms.ConnectedComponents;
 import com.besil.neo4jsna.algorithms.LabelPropagation;
 import com.besil.neo4jsna.algorithms.PageRank;
+import com.besil.neo4jsna.algorithms.StronglyConnectedComponents;
 import com.besil.neo4jsna.algorithms.TriangleCount;
 import com.besil.neo4jsna.engine.GraphEngine;
 import com.besil.neo4jsna.measures.DirectedModularity;
@@ -39,43 +40,43 @@ public class Neo4jSNAMain {
 	
 		GraphEngine engine = new GraphEngine(g);
 
-		System.out.println("Label Propagation CD");
 		LabelPropagation lp = new LabelPropagation();
 		engine.execute(lp);
 		Long2LongMap communityMap = lp.getResult();
 		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
-		System.out.println("There are "+totCommunities+" communities");
+		System.out.println("There are "+totCommunities+" communities according to Label Propagation");
 
-		System.out.println("Directed Modularity");
 		DirectedModularity modularity = new DirectedModularity(g);
 		engine.execute(modularity);
 		System.out.println("The undirected modularity of this network is "+modularity.getResult());
 		
-		System.out.println("Undirected Modularity");
 		UndirectedModularity umodularity = new UndirectedModularity(g);
 		engine.execute(umodularity);
 		System.out.println("The undirected modularity of this network is "+umodularity.getResult());
 
-		System.out.println("Triangle Count");
 		TriangleCount tc = new TriangleCount();
 		engine.execute(tc);
 		Long2LongMap triangleCount = tc.getResult();
 		Optional<Long> totalTriangles = triangleCount.values().stream().reduce( (x, y) -> x + y );
 		System.out.println("There are "+totalTriangles.get()+" triangles");
 
-		System.out.println("PageRank");
 		PageRank pr = new PageRank(g);
 		engine.execute(pr);
 		Long2DoubleMap ranks = pr.getResult();
 		Optional<Double> res = ranks.values().parallelStream().reduce( (x, y) -> x + y );
 		System.out.println("Check PageRank sum is 1.0: "+ res.get());
 
-		System.out.println("Connected Components");
 		ConnectedComponents cc = new ConnectedComponents();
 		engine.execute(cc);
 		Long2LongMap components = cc.getResult();
 		int totalComponents = new LongOpenHashSet( components.values() ).size();
 		System.out.println("There are "+ totalComponents+ " different components");
+		
+		StronglyConnectedComponents scc = new StronglyConnectedComponents();
+		engine.execute(cc);
+		components = scc.getResult();
+		totalComponents = new LongOpenHashSet( components.values() ).size();
+		System.out.println("There are "+ totalComponents+ " different strongly components");
 		
 		g.shutdown();
 	}
