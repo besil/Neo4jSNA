@@ -17,7 +17,7 @@ import com.besil.neo4jsna.algorithms.LabelPropagation;
 import com.besil.neo4jsna.algorithms.PageRank;
 import com.besil.neo4jsna.algorithms.StronglyConnectedComponents;
 import com.besil.neo4jsna.algorithms.TriangleCount;
-import com.besil.neo4jsna.engine.GraphEngine;
+import com.besil.neo4jsna.engine.GraphAlgoEngine;
 import com.besil.neo4jsna.measures.DirectedModularity;
 import com.besil.neo4jsna.measures.UndirectedModularity;
 
@@ -38,7 +38,7 @@ public class Neo4jSNAMain {
 		System.out.println("Node count: "+nodeCount);
 		System.out.println("Rel count: "+relsCount);
 	
-		GraphEngine engine = new GraphEngine(g);
+		GraphAlgoEngine engine = new GraphAlgoEngine(g);
 
 		LabelPropagation lp = new LabelPropagation();
 		engine.execute(lp);
@@ -48,7 +48,7 @@ public class Neo4jSNAMain {
 
 		DirectedModularity modularity = new DirectedModularity(g);
 		engine.execute(modularity);
-		System.out.println("The undirected modularity of this network is "+modularity.getResult());
+		System.out.println("The directed modularity of this network is "+modularity.getResult());
 		
 		UndirectedModularity umodularity = new UndirectedModularity(g);
 		engine.execute(umodularity);
@@ -70,13 +70,13 @@ public class Neo4jSNAMain {
 		engine.execute(cc);
 		Long2LongMap components = cc.getResult();
 		int totalComponents = new LongOpenHashSet( components.values() ).size();
-		System.out.println("There are "+ totalComponents+ " different components");
+		System.out.println("There are "+ totalComponents+ " different connected components");
 		
 		StronglyConnectedComponents scc = new StronglyConnectedComponents();
 		engine.execute(cc);
 		components = scc.getResult();
 		totalComponents = new LongOpenHashSet( components.values() ).size();
-		System.out.println("There are "+ totalComponents+ " different strongly components");
+		System.out.println("There are "+ totalComponents+ " different strongly connected components");
 		
 		g.shutdown();
 	}

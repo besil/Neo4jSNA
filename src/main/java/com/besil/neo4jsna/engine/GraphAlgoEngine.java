@@ -15,12 +15,12 @@ import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 import com.besil.neo4jsna.measures.DirectedModularity;
 import com.besil.neo4jsna.utils.Timer;
 
-public class GraphEngine {
-	private final Logger log = Logger.getLogger(GraphEngine.class.getName()); 
+public class GraphAlgoEngine {
+	private final Logger log = Logger.getLogger(GraphAlgoEngine.class.getName()); 
 	protected GraphDatabaseService graph;
 	protected ExecutionEngine engine;
 	
-	public GraphEngine(GraphDatabaseService g) {	
+	public GraphAlgoEngine(GraphDatabaseService g) {	
 		this.graph = g;
 		this.engine = new ExecutionEngine(g);
 	}
