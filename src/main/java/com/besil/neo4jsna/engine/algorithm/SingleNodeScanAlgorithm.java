@@ -1,5 +1,7 @@
 package com.besil.neo4jsna.engine.algorithm;
 
-public interface SingleNodeScanAlgorithm extends Algorithm {
+import org.neo4j.graphdb.Node;
 
+public interface SingleNodeScanAlgorithm extends Algorithm {
+	public abstract void compute(Node n);
 }

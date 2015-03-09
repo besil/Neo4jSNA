@@ -12,7 +12,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
-import com.besil.neo4jsna.measures.Modularity;
+import com.besil.neo4jsna.measures.DirectedModularity;
 import com.besil.neo4jsna.utils.Timer;
 
 public class GraphEngine {
@@ -25,7 +25,7 @@ public class GraphEngine {
 		this.engine = new ExecutionEngine(g);
 	}
 	
-	public void execute(Modularity modularity) {
+	public void execute(DirectedModularity modularity) {
 		try( Transaction tx = graph.beginTx() ) {
 			for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
 				modularity.compute(n);

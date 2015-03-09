@@ -17,7 +17,8 @@ import com.besil.neo4jsna.algorithms.LabelPropagation;
 import com.besil.neo4jsna.algorithms.PageRank;
 import com.besil.neo4jsna.algorithms.TriangleCount;
 import com.besil.neo4jsna.engine.GraphEngine;
-import com.besil.neo4jsna.measures.Modularity;
+import com.besil.neo4jsna.measures.DirectedModularity;
+import com.besil.neo4jsna.measures.UndirectedModularity;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
@@ -45,10 +46,15 @@ public class Neo4jSNAMain {
 		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
 		System.out.println("There are "+totCommunities+" communities");
 
-		System.out.println("Modularity");
-		Modularity modularity = new Modularity(g);
+		System.out.println("Directed Modularity");
+		DirectedModularity modularity = new DirectedModularity(g);
 		engine.execute(modularity);
-		System.out.println("The modularity of this network is "+modularity.getResult());
+		System.out.println("The undirected modularity of this network is "+modularity.getResult());
+		
+		System.out.println("Undirected Modularity");
+		UndirectedModularity umodularity = new UndirectedModularity(g);
+		engine.execute(umodularity);
+		System.out.println("The undirected modularity of this network is "+umodularity.getResult());
 
 		System.out.println("Triangle Count");
 		TriangleCount tc = new TriangleCount();
