@@ -14,48 +14,58 @@ The implemented algorithms are, for now:
 - [ ] Community Detection (http://arxiv.org/pdf/0906.0612v2.pdf)
 	- [x] Label Propagation	(http://arxiv.org/pdf/0709.2938v1.pdf)
 	- [ ] Louvain Method (http://arxiv.org/pdf/0803.0476v2.pdf)
-	- [ ] Modularity (http://arxiv.org/pdf/physics/0602124.pdf)
+	- [x] Modularity (http://arxiv.org/pdf/physics/0602124.pdf)
 
 
 # QuickStart
 
 ```Java
-String path = "data/tmp/cineasts";
+String path = "data/tmp/cineasts";;
 
 // Open a database instance
 GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
 
-// Declare the GraphEngine on the database instance
-GraphEngine engine = new GraphEngine(g);
+// Declare the GraphAlgoEngine on the database instance
+GraphAlgoEngine engine = new GraphAlgoEngine(g);
 
-System.out.println("Triangle Count");
+LabelPropagation lp = new LabelPropagation();
+// Starts the algorithm on the given graph g
+engine.execute(lp);
+Long2LongMap communityMap = lp.getResult();
+long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
+System.out.println("There are "+totCommunities+" communities according to Label Propagation");
+
+DirectedModularity modularity = new DirectedModularity(g);
+engine.execute(modularity);
+System.out.println("The directed modularity of this network is "+modularity.getResult());
+
+UndirectedModularity umodularity = new UndirectedModularity(g);
+engine.execute(umodularity);
+System.out.println("The undirected modularity of this network is "+umodularity.getResult());
+
 TriangleCount tc = new TriangleCount();
 engine.execute(tc);
 Long2LongMap triangleCount = tc.getResult();
 Optional<Long> totalTriangles = triangleCount.values().stream().reduce( (x, y) -> x + y );
 System.out.println("There are "+totalTriangles.get()+" triangles");
 
-System.out.println("PageRank");
 PageRank pr = new PageRank(g);
-// Starts the algorithm on the given graph g
 engine.execute(pr);
-Map<Long, Double> ranks = pr.getResult();
+Long2DoubleMap ranks = pr.getResult();
 Optional<Double> res = ranks.values().parallelStream().reduce( (x, y) -> x + y );
 System.out.println("Check PageRank sum is 1.0: "+ res.get());
 
-System.out.println("Connected Components");
 ConnectedComponents cc = new ConnectedComponents();
 engine.execute(cc);
-Map<Long, Long> components = cc.getResult();
+Long2LongMap components = cc.getResult();
 int totalComponents = new LongOpenHashSet( components.values() ).size();
-System.out.println("There are "+ totalComponents+ " different components");
+System.out.println("There are "+ totalComponents+ " different connected components");
 
-System.out.println("Label Propagation CD");
-LabelPropagation lp = new LabelPropagation();
-engine.execute(lp);
-Long2LongMap communityMap = lp.getResult();
-long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
-System.out.println("There are "+totCommunities+" communities");
+StronglyConnectedComponents scc = new StronglyConnectedComponents();
+engine.execute(cc);
+components = scc.getResult();
+totalComponents = new LongOpenHashSet( components.values() ).size();
+System.out.println("There are "+ totalComponents+ " different strongly connected components");
 
 // Don't forget to shutdown the database
 g.shutdown();

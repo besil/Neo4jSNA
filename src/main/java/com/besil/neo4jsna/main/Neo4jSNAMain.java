@@ -28,6 +28,7 @@ public class Neo4jSNAMain {
 		String path = cinea;
 		long nodeCount, relsCount;
 		
+		// Open a database instance
 		GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
 		try (Transaction tx = g.beginTx() ) {
 			nodeCount = IteratorUtil.count( GlobalGraphOperations.at(g).getAllNodes() );
@@ -38,9 +39,11 @@ public class Neo4jSNAMain {
 		System.out.println("Node count: "+nodeCount);
 		System.out.println("Rel count: "+relsCount);
 	
+		// Declare the GraphAlgoEngine on the database instance
 		GraphAlgoEngine engine = new GraphAlgoEngine(g);
 
 		LabelPropagation lp = new LabelPropagation();
+		// Starts the algorithm on the given graph g
 		engine.execute(lp);
 		Long2LongMap communityMap = lp.getResult();
 		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
@@ -78,6 +81,7 @@ public class Neo4jSNAMain {
 		totalComponents = new LongOpenHashSet( components.values() ).size();
 		System.out.println("There are "+ totalComponents+ " different strongly connected components");
 		
+		// Don't forget to shutdown the database
 		g.shutdown();
 	}
 }
