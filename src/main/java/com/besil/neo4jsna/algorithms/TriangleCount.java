@@ -29,8 +29,6 @@ public class TriangleCount implements CypherAlgorithm {
 
 	@Override
 	public void collectResult(ExecutionResult result) {
-		System.out.println(result.toString());
-		
 		for(Map<String, Object> row : result) {
 			long nodeid = (long) row.get("nodeid");
 			long triangleCount = (long) row.get("triangleCount");

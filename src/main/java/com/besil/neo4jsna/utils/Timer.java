@@ -16,7 +16,7 @@ public class Timer {
 
 	protected final Clock clock;
 	public long ts, te;
-	public Timer() {
+	protected Timer() {
 		clock = Clock.systemDefaultZone();
 	}
 	
