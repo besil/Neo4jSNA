@@ -14,6 +14,7 @@ The implemented algorithms are, for now:
 - [ ] Community Detection (http://arxiv.org/pdf/0906.0612v2.pdf)
 	- [x] Label Propagation	(http://arxiv.org/pdf/0709.2938v1.pdf)
 	- [ ] Louvain Method (http://arxiv.org/pdf/0803.0476v2.pdf)
+	- [ ] Demon (http://www.michelecoscia.com/wp-content/uploads/2012/08/cosciakdd12.pdf)
 	- [x] Modularity (http://arxiv.org/pdf/physics/0602124.pdf)
 
 
