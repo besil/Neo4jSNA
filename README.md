@@ -21,7 +21,7 @@ The implemented algorithms are, for now:
 # QuickStart
 
 ```Java
-String path = "data/tmp/cineasts";;
+String path = "data/tmp/cineasts";
 
 // Open a database instance
 GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
