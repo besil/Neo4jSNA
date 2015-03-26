@@ -1,5 +1,6 @@
 package com.besil.neo4jsna.engine;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.neo4j.cypher.javacompat.ExecutionEngine;
@@ -16,7 +17,7 @@ import com.besil.neo4jsna.measures.DirectedModularity;
 import com.besil.neo4jsna.utils.Timer;
 
 public class GraphAlgoEngine {
-	private final Logger log = Logger.getLogger(GraphAlgoEngine.class.getName()); 
+	private Logger log = Logger.getLogger(GraphAlgoEngine.class.getName()); 
 	protected GraphDatabaseService graph;
 	protected ExecutionEngine engine;
 	
@@ -98,5 +99,9 @@ public class GraphAlgoEngine {
 			tx.success();
 		}
 	}
-
+	
+	public void disableLogging() {
+		this.log.setLevel(Level.OFF);
+	}
+	
 }

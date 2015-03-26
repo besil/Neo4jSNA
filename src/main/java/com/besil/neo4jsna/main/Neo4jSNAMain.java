@@ -23,9 +23,9 @@ import com.besil.neo4jsna.measures.UndirectedModularity;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
-		String cinea = "data/tmp/cineasts";
+		String database = args.length > 0 ? args[0] : "data/tmp/cineasts";
 		
-		String path = cinea;
+		String path = database;
 		long nodeCount, relsCount;
 		
 		// Open a database instance
@@ -41,6 +41,8 @@ public class Neo4jSNAMain {
 	
 		// Declare the GraphAlgoEngine on the database instance
 		GraphAlgoEngine engine = new GraphAlgoEngine(g);
+		if( args.length > 1 && args[1].equals("off") )
+			engine.disableLogging();
 
 		LabelPropagation lp = new LabelPropagation();
 		// Starts the algorithm on the given graph g
@@ -68,6 +70,7 @@ public class Neo4jSNAMain {
 		PageRank pr = new PageRank(g);
 		engine.execute(pr);
 		Long2DoubleMap ranks = pr.getResult();
+		engine.clean(pr);
 		Optional<Double> res = ranks.values().parallelStream().reduce( (x, y) -> x + y );
 		System.out.println("Check PageRank sum is 1.0: "+ res.get());
 
