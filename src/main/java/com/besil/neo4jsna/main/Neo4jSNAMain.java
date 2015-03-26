@@ -46,7 +46,6 @@ public class Neo4jSNAMain {
 		// Starts the algorithm on the given graph g
 		engine.execute(lp);
 		Long2LongMap communityMap = lp.getResult();
-		engine.clean(lp);
 		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
 		System.out.println("There are "+totCommunities+" communities according to Label Propagation");
 
@@ -57,7 +56,9 @@ public class Neo4jSNAMain {
 		UndirectedModularity umodularity = new UndirectedModularity(g);
 		engine.execute(umodularity);
 		System.out.println("The undirected modularity of this network is "+umodularity.getResult());
-
+		
+		engine.clean(lp); // Now you can clean Label propagation results
+		
 		TriangleCount tc = new TriangleCount();
 		engine.execute(tc);
 		Long2LongMap triangleCount = tc.getResult();
