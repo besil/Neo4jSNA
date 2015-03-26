@@ -8,4 +8,5 @@ public abstract interface VertexAlgorithm extends Algorithm {
 	public abstract void collectResult(Node node);
 	
 	public abstract int getMaxIterations();
+	public abstract String getAttributeName();
 }

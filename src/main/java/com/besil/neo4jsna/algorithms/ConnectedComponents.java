@@ -57,4 +57,9 @@ public class ConnectedComponents implements VertexAlgorithm {
 	public Long2LongMap getResult() {
 		return this.componentsMap;
 	}
+
+	@Override
+	public String getAttributeName() {
+		return attName;
+	}
 }

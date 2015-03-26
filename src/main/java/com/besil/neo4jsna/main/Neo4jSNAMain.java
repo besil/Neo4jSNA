@@ -46,6 +46,7 @@ public class Neo4jSNAMain {
 		// Starts the algorithm on the given graph g
 		engine.execute(lp);
 		Long2LongMap communityMap = lp.getResult();
+		engine.clean(lp);
 		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
 		System.out.println("There are "+totCommunities+" communities according to Label Propagation");
 
@@ -72,12 +73,14 @@ public class Neo4jSNAMain {
 		ConnectedComponents cc = new ConnectedComponents();
 		engine.execute(cc);
 		Long2LongMap components = cc.getResult();
+		engine.clean(cc);
 		int totalComponents = new LongOpenHashSet( components.values() ).size();
 		System.out.println("There are "+ totalComponents+ " different connected components");
 		
 		StronglyConnectedComponents scc = new StronglyConnectedComponents();
-		engine.execute(cc);
+		engine.execute(scc);
 		components = scc.getResult();
+		engine.clean(scc);
 		totalComponents = new LongOpenHashSet( components.values() ).size();
 		System.out.println("There are "+ totalComponents+ " different strongly connected components");
 		

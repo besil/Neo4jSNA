@@ -88,4 +88,15 @@ public class GraphAlgoEngine {
 		log.info("Collect: "+Timer.timer().totalTime());
 	}
 
+	public void clean(VertexAlgorithm algo) {
+		try( Transaction tx = graph.beginTx() ) {
+			for(Node n: GlobalGraphOperations.at(graph).getAllNodes()) {
+				String attrName = algo.getAttributeName();
+				if( n.hasProperty(attrName) )
+					n.removeProperty(attrName);
+			}
+			tx.success();
+		}
+	}
+
 }

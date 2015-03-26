@@ -67,4 +67,9 @@ public class PageRank implements VertexAlgorithm {
 		return rankMap;
 	}
 
+	@Override
+	public String getAttributeName() {
+		return attName;
+	}
+
 }

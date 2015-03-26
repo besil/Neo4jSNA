@@ -68,4 +68,9 @@ public class LabelPropagation implements VertexAlgorithm {
 		return communityMap;
 	}
 
+	@Override
+	public String getAttributeName() {
+		return attName;
+	}
+
 }
