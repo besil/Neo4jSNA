@@ -28,6 +28,7 @@ public class Neo4jSNAMain {
 		String path = database;
 		long nodeCount, relsCount;
 		
+		
 		// Open a database instance
 		GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
 		try (Transaction tx = g.beginTx() ) {
