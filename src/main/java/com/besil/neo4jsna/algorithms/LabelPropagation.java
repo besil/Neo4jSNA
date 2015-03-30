@@ -13,11 +13,11 @@ import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 public class LabelPropagation implements VertexAlgorithm {
 	protected Long2LongMap communityMap;
 	protected final String attName = "community";
-	
+
 	public LabelPropagation() {
 		this.communityMap = new Long2LongOpenHashMap();
 	}
-	
+
 	@Override
 	public void init(Node node) {
 		node.setProperty(attName, node.getId());
@@ -28,15 +28,19 @@ public class LabelPropagation implements VertexAlgorithm {
 		long mostFrequentLabel = this.getMostFrequentLabel(node);
 		node.setProperty(attName, mostFrequentLabel);
 	}
-	
+
 	protected long getMostFrequentLabel(Node node) {
 		Long2LongMap commMap = new Long2LongOpenHashMap();
+
 		for( Relationship r : node.getRelationships() ) {
 			Node other = r.getOtherNode(node);
 			long otherCommunity = (long) other.getProperty(attName);
-			commMap.put(other.getId(), otherCommunity);
+			// commMap.put(other.getId(), otherCommunity);	WRONG
+			long count = commMap.getOrDefault(otherCommunity, 0L);
+			commMap.put(otherCommunity, count+1);
+
 		}
-		
+
 		long mostFrequentLabel = -1;
 		long mostFrequentLabelCount = -1;
 		for( Entry<Long, Long> e : commMap.entrySet() ) {
