@@ -1,9 +1,10 @@
 package com.besil.neo4jsna.engine.algorithm;
 
-import org.neo4j.cypher.javacompat.ExecutionResult;
+import org.neo4j.graphdb.Result;
 
 public interface CypherAlgorithm extends Algorithm {
 	public String getQuery();
-	public void collectResult(ExecutionResult result);
+
+	public void collectResult(Result result);
 
 }

@@ -1,30 +1,22 @@
 package com.besil.neo4jsna.engine;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.neo4j.cypher.javacompat.ExecutionEngine;
-import org.neo4j.cypher.javacompat.ExecutionResult;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-import org.neo4j.graphdb.Transaction;
-import org.neo4j.tooling.GlobalGraphOperations;
-
 import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 import com.besil.neo4jsna.measures.DirectedModularity;
 import com.besil.neo4jsna.utils.Timer;
+import org.neo4j.graphdb.*;
+import org.neo4j.tooling.GlobalGraphOperations;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class GraphAlgoEngine {
-	private Logger log = Logger.getLogger(GraphAlgoEngine.class.getName()); 
 	protected GraphDatabaseService graph;
-	protected ExecutionEngine engine;
-	
-	public GraphAlgoEngine(GraphDatabaseService g) {	
-		this.graph = g;
-		this.engine = new ExecutionEngine(g);
-	}
+    private Logger log = Logger.getLogger(GraphAlgoEngine.class.getName());
+
+    public GraphAlgoEngine(GraphDatabaseService g) {
+        this.graph = g;
+    }
 	
 	public void execute(DirectedModularity modularity) {
 		try( Transaction tx = graph.beginTx() ) {
@@ -40,10 +32,11 @@ public class GraphAlgoEngine {
 	
 	public void execute(CypherAlgorithm algorithm) {
 		Timer timer = Timer.newTimer();
-		ExecutionResult result = engine.execute(algorithm.getQuery());
-		algorithm.collectResult(result);
-		timer.stop();
-		log.info(algorithm.getName()+" execution: "+timer.totalTime());
+        Result result = this.graph.execute(algorithm.getQuery());
+//        ExecutionResult result = engine.execute(algorithm.getQuery());
+        algorithm.collectResult(result);
+        timer.stop();
+        log.info(algorithm.getName()+" execution: "+timer.totalTime());
 	}
 
 	public void execute(VertexAlgorithm algorithm) {
