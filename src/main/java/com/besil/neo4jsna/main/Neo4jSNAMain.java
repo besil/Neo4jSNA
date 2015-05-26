@@ -23,7 +23,7 @@ import com.besil.neo4jsna.measures.UndirectedModularity;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
-		String database = args.length > 0 ? args[0] : "data/tmp/cineasts";
+		String database = args.length > 0 ? args[0] : "data/cineasts_12k_movies_50k_actors.db";
 		
 		String path = database;
 		long nodeCount, relsCount;
