@@ -1,9 +1,15 @@
 package com.besil.neo4jsna.algorithms;
 
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
+import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by besil on 26/05/15.
@@ -15,8 +21,25 @@ public class Demon implements VertexAlgorithm {
         this.db = db;
     }
 
-    public Iterable<Relationship> getEgoNetwork(Node node) {
-        return node.getRelationships();
+    public List<Relationship> getEgoNetwork(Node root) {
+        List<Relationship> rels = new LinkedList<>();
+        LongSet neighbours = new LongOpenHashSet();
+
+        for (Relationship r : root.getRelationships(Direction.OUTGOING)) {
+            Node neigh = r.getOtherNode(root);
+            neighbours.add(neigh.getId());
+            rels.add(r);
+        }
+
+        for (long neigh : neighbours) {
+            Node neighNode = db.getNodeById(neigh);
+            for (Relationship r : neighNode.getRelationships(Direction.OUTGOING)) {
+                Node other = r.getOtherNode(neighNode);
+                if (neighbours.contains(other.getId()))
+                    rels.add(r);
+            }
+        }
+        return rels;
     }
 
     @Override
