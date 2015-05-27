@@ -2,11 +2,14 @@ package com.besil.neo4jsna.engine.algorithm;
 
 import org.neo4j.graphdb.Node;
 
-public abstract interface VertexAlgorithm extends Algorithm {
-	public abstract void init(Node node);
-	public abstract void apply(Node node);
-	public abstract void collectResult(Node node);
-	
-	public abstract int getMaxIterations();
-	public abstract String getAttributeName();
+public interface VertexAlgorithm extends Algorithm {
+	void init(Node node);
+
+	void apply(Node node);
+
+	void collectResult(Node node);
+
+	int getMaxIterations();
+
+	String getAttributeName();
 }
