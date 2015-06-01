@@ -1,6 +1,6 @@
 package com.besil.neo4jsna.algorithms;
 
-import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
+import com.besil.neo4jsna.engine.algorithm.SingleNodeScanAlgorithm;
 import com.besil.neo4jsna.utils.GraphUtils;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongList;
@@ -11,11 +11,16 @@ import java.util.Iterator;
 /**
  * Created by besil on 26/05/15.
  */
-public class Demon implements VertexAlgorithm {
+public class Demon implements SingleNodeScanAlgorithm {
     public static final Label DemonLabel = DynamicLabel.label("DEMON_NODE");
     private final GraphDatabaseService db;
     public Demon(GraphDatabaseService db) {
         this.db = db;
+    }
+
+    @Override
+    public void compute(Node n) {
+
     }
 
     public void executeEgoMinusEgo(Node root) {
@@ -82,31 +87,6 @@ public class Demon implements VertexAlgorithm {
     }
 
     @Override
-    public void init(Node node) {
-
-    }
-
-    @Override
-    public void apply(Node node) {
-
-    }
-
-    @Override
-    public void collectResult(Node node) {
-
-    }
-
-    @Override
-    public int getMaxIterations() {
-        return 0;
-    }
-
-    @Override
-    public String getAttributeName() {
-        return "demon";
-    }
-
-    @Override
     public String getName() {
         return "Demon";
     }
@@ -117,4 +97,5 @@ public class Demon implements VertexAlgorithm {
     }
 
     public static enum DemonRelType implements RelationshipType {DEMON_RELTYPE;}
+
 }

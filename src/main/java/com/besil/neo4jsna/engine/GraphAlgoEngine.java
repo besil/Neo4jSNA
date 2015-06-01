@@ -1,6 +1,7 @@
 package com.besil.neo4jsna.engine;
 
 import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
+import com.besil.neo4jsna.engine.algorithm.SingleNodeScanAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 import com.besil.neo4jsna.measures.DirectedModularity;
 import com.besil.neo4jsna.utils.Timer;
@@ -29,8 +30,16 @@ public class GraphAlgoEngine {
 			tx.success();
 		}
 	}
-	
-	public void execute(CypherAlgorithm algorithm) {
+
+    public void execute(SingleNodeScanAlgorithm algo) {
+        try (Transaction tx = graph.beginTx()) {
+            for (Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
+                algo.compute(n);
+            }
+        }
+    }
+
+    public void execute(CypherAlgorithm algorithm) {
 		Timer timer = Timer.newTimer();
         Result result = this.graph.execute(algorithm.getQuery());
 //        ExecutionResult result = engine.execute(algorithm.getQuery());
