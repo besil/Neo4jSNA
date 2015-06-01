@@ -1,22 +1,27 @@
 package com.besil.neo4jsna.algorithms;
 
+import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 
 import java.util.Map.Entry;
 
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
-
-import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
-
 public class LabelPropagation implements VertexAlgorithm {
-	protected Long2LongMap communityMap;
-	protected final String attName = "community";
+    protected final String attName = "community";
+    protected final RelationshipType relType;
+    protected Long2LongMap communityMap;
 
-	public LabelPropagation() {
-		this.communityMap = new Long2LongOpenHashMap();
-	}
+    public LabelPropagation() {
+        this(null);
+    }
+
+    public LabelPropagation(RelationshipType relType) {
+        this.communityMap = new Long2LongOpenHashMap();
+        this.relType = relType;
+    }
 
 	@Override
 	public void init(Node node) {
@@ -31,14 +36,14 @@ public class LabelPropagation implements VertexAlgorithm {
 
 	protected long getMostFrequentLabel(Node node) {
 		Long2LongMap commMap = new Long2LongOpenHashMap();
+        Iterable<Relationship> relationships = relType == null ? node.getRelationships() : node.getRelationships(relType);
 
-		for( Relationship r : node.getRelationships() ) {
-			Node other = r.getOtherNode(node);
+        for (Relationship r : relationships) {
+            Node other = r.getOtherNode(node);
 			long otherCommunity = (long) other.getProperty(attName);
 			// commMap.put(other.getId(), otherCommunity);	WRONG
 			long count = commMap.getOrDefault(otherCommunity, 0L);
 			commMap.put(otherCommunity, count+1);
-
 		}
 
 		long mostFrequentLabel = -1;

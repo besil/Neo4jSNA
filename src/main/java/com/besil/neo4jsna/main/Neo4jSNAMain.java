@@ -1,25 +1,19 @@
 package com.besil.neo4jsna.main;
 
+import com.besil.neo4jsna.algorithms.*;
+import com.besil.neo4jsna.engine.GraphAlgoEngine;
+import com.besil.neo4jsna.measures.DirectedModularity;
+import com.besil.neo4jsna.measures.UndirectedModularity;
 import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
-import java.util.Optional;
-
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import com.besil.neo4jsna.algorithms.ConnectedComponents;
-import com.besil.neo4jsna.algorithms.LabelPropagation;
-import com.besil.neo4jsna.algorithms.PageRank;
-import com.besil.neo4jsna.algorithms.StronglyConnectedComponents;
-import com.besil.neo4jsna.algorithms.TriangleCount;
-import com.besil.neo4jsna.engine.GraphAlgoEngine;
-import com.besil.neo4jsna.measures.DirectedModularity;
-import com.besil.neo4jsna.measures.UndirectedModularity;
+import java.util.Optional;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
@@ -38,31 +32,37 @@ public class Neo4jSNAMain {
 		}
 		
 		System.out.println("Node count: "+nodeCount);
-		System.out.println("Rel count: "+relsCount);
-	
-		// Declare the GraphAlgoEngine on the database instance
+        System.out.println("Rel count: " + relsCount);
+
+        // Declare the GraphAlgoEngine on the database instance
 		GraphAlgoEngine engine = new GraphAlgoEngine(g);
 		if( args.length > 1 && args[1].equals("off") )
 			engine.disableLogging();
+
+        Demon demon = new Demon(g);
+        engine.execute(demon);
+
+        if (2 == 2)
+            throw new RuntimeException();
 
 		LabelPropagation lp = new LabelPropagation();
 		// Starts the algorithm on the given graph g
 		engine.execute(lp);
 		Long2LongMap communityMap = lp.getResult();
 		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
-		System.out.println("There are "+totCommunities+" communities according to Label Propagation");
+        System.out.println("There are " + totCommunities + " communities according to Label Propagation");
 
 		DirectedModularity modularity = new DirectedModularity(g);
 		engine.execute(modularity);
-		System.out.println("The directed modularity of this network is "+modularity.getResult());
-		
-		UndirectedModularity umodularity = new UndirectedModularity(g);
+        System.out.println("The directed modularity of this network is " + modularity.getResult());
+
+        UndirectedModularity umodularity = new UndirectedModularity(g);
 		engine.execute(umodularity);
-		System.out.println("The undirected modularity of this network is "+umodularity.getResult());
-		
-		engine.clean(lp); // Now you can clean Label propagation results
-		
-		TriangleCount tc = new TriangleCount();
+        System.out.println("The undirected modularity of this network is " + umodularity.getResult());
+
+        engine.clean(lp); // Now you can clean Label propagation results
+
+        TriangleCount tc = new TriangleCount();
 		engine.execute(tc);
 		Long2LongMap triangleCount = tc.getResult();
 		Optional<Long> totalTriangles = triangleCount.values().stream().reduce( (x, y) -> x + y );
