@@ -1,34 +1,65 @@
 package com.besil.neo4jsna.algorithms;
 
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import org.neo4j.graphdb.Direction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
-import org.neo4j.graphdb.Relationship;
+import com.besil.neo4jsna.utils.GraphUtils;
+import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongList;
+import org.neo4j.graphdb.*;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Iterator;
 
 /**
  * Created by besil on 26/05/15.
  */
 public class Demon implements VertexAlgorithm {
+    public static final Label DemonLabel = DynamicLabel.label("DEMON_NODE");
     private final GraphDatabaseService db;
-
     public Demon(GraphDatabaseService db) {
         this.db = db;
     }
 
-    public List<Relationship> getEgoNetwork(Node root) {
-        List<Relationship> rels = new LinkedList<>();
-        LongSet neighbours = new LongOpenHashSet();
+    public void executeEgoMinusEgo(Node root) {
+        LongList neighbours = new LongArrayList();
 
         for (Relationship r : root.getRelationships(Direction.OUTGOING)) {
-            Node neigh = r.getOtherNode(root);
+            Node neigh = r.getEndNode();
+            neigh.addLabel(DemonLabel);
             neighbours.add(neigh.getId());
-            rels.add(r);
+        }
+
+        for (long neigh : neighbours) {
+            Node neighNode = db.getNodeById(neigh);
+            for (Relationship r : neighNode.getRelationships(Direction.OUTGOING)) {
+                Node other = r.getEndNode();
+                if (neighbours.contains(other.getId()))
+                    neighNode.createRelationshipTo(other, DemonRelType.DEMON_RELTYPE);
+            }
+        }
+    }
+
+    public ResourceIterator<Node> getDemonNodes() {
+        return db.findNodes(DemonLabel);
+    }
+
+    public Iterator<Relationship> getDemonRelationships() {
+        return GraphUtils.getRelationshisByNodeAndRelationshipType(db, Demon.DemonLabel, Demon.DemonRelType.DEMON_RELTYPE);
+    }
+
+    /**
+     * Mark the nodes of the egoNetwork of node root with label DemonLabel and create the relationships of type DemonRelType
+     *
+     * @param root
+     * @return
+     */
+    public void setEgoNetwork(Node root) {
+        LongList neighbours = new LongArrayList();
+
+        root.addLabel(DemonLabel);
+        for (Relationship r : root.getRelationships(Direction.OUTGOING)) {
+            Node neigh = r.getOtherNode(root);
+            neigh.addLabel(DemonLabel);
+            root.createRelationshipTo(neigh, DemonRelType.DEMON_RELTYPE);
+            neighbours.add(neigh.getId());
         }
 
         for (long neigh : neighbours) {
@@ -36,10 +67,18 @@ public class Demon implements VertexAlgorithm {
             for (Relationship r : neighNode.getRelationships(Direction.OUTGOING)) {
                 Node other = r.getOtherNode(neighNode);
                 if (neighbours.contains(other.getId()))
-                    rels.add(r);
+                    neighNode.createRelationshipTo(other, DemonRelType.DEMON_RELTYPE);
             }
         }
-        return rels;
+    }
+
+    public void clearEgoNetwork(Node root) {
+        Iterator<Relationship> demonRels = GraphUtils.getRelationshisByNodeAndRelationshipType(db, DemonLabel, DemonRelType.DEMON_RELTYPE);
+        while (demonRels.hasNext())
+            demonRels.next().delete();
+        ResourceIterator<Node> nodes = db.findNodes(DemonLabel);
+        while (nodes.hasNext())
+            nodes.next().removeLabel(DemonLabel);
     }
 
     @Override
@@ -76,4 +115,6 @@ public class Demon implements VertexAlgorithm {
     public Object getResult() {
         return null;
     }
+
+    public static enum DemonRelType implements RelationshipType {DEMON_RELTYPE;}
 }
