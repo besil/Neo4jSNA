@@ -42,9 +42,6 @@ public class Neo4jSNAMain {
         Demon demon = new Demon(g);
         engine.execute(demon);
 
-        if (2 == 2)
-            throw new RuntimeException();
-
 		LabelPropagation lp = new LabelPropagation();
 		// Starts the algorithm on the given graph g
 		engine.execute(lp);
