@@ -4,6 +4,7 @@ import com.besil.neo4jsna.algorithms.Demon;
 import org.neo4j.graphdb.*;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -29,7 +30,11 @@ public class GraphUtils {
     public static void print(GraphDatabaseService g) {
         for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
             StringBuilder sb = new StringBuilder(n + " " + n.getLabels() + " ");
-            for (String pk : n.getPropertyKeys()) {
+            List<String> properties = new LinkedList<>();
+            n.getPropertyKeys().forEach(k -> properties.add(k));
+            Collections.sort(properties);
+
+            for (String pk : properties) {
                 sb.append(pk + ":" + n.getProperty(pk) + " ");
             }
             log.info(sb.toString());
