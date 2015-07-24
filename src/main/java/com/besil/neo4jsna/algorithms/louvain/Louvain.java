@@ -1,5 +1,7 @@
 package com.besil.neo4jsna.algorithms.louvain;
 
+import com.besil.neo4jsna.engine.GraphAlgoEngine;
+import com.besil.neo4jsna.measures.UndirectedModularity;
 import com.besil.neo4jsna.utils.GraphUtils;
 import org.neo4j.graphdb.*;
 import org.neo4j.graphdb.schema.IndexDefinition;
@@ -64,6 +66,11 @@ public class Louvain {
             tx.success();
         }
 
+        GraphAlgoEngine engine = new GraphAlgoEngine(g);
+        UndirectedModularity um = new UndirectedModularity(g);
+        engine.execute(um);
+        System.out.println("Modularity: " + um.getResult());
+
         try (Transaction tx = g.beginTx()) {
             this.secondPhase();
             tx.success();
@@ -75,12 +82,15 @@ public class Louvain {
     }
 
     public void firstPhase() {
-        int movements = 0;
+        int movements;
 
         do {
+            movements = 0;
             for (Node src : GlobalGraphOperations.at(g).getAllNodes()) {
                 logger.info("Src: " + src);
                 long srcCommunity = (long) src.getProperty(communityProperty);
+                long bestCommunity = srcCommunity;
+                double bestDelta = 0.0;
 
                 for (Relationship r : src.getRelationships(Direction.BOTH)) {
                     Node neigh = r.getOtherNode(src);
@@ -89,23 +99,51 @@ public class Louvain {
                     double delta = this.calculateDelta(src, srcCommunity, neighCommunity);
                     logger.info("    Dst: " + neigh + " -> " + delta);
 
-                    if (delta > 0) {
-                        src.setProperty(communityProperty, neighCommunity);
-                        movements++;
+                    if (delta > bestDelta) {
+//                        logger.info("        Moving "+src+" to community "+neighCommunity);
+//                        src.setProperty(communityProperty, neighCommunity);
+//                        movements++;
+                        bestDelta = delta;
+                        bestCommunity = neighCommunity;
                     }
                 }
+
+                if (srcCommunity != bestCommunity) {
+                    logger.info("        Moving " + src + " to community " + bestCommunity);
+                    src.setProperty(communityProperty, bestCommunity);
+                    movements++;
+                }
             }
+
+
             logger.info("Movements: " + movements);
+            GraphUtils.print(g);
+
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } while (movements != 0);
     }
 
     private double calculateDelta(Node n, long srcCommunity, long dstCommunity) {
         double first, second;
+
+//        logger.info("Diff between: "+this.communityWeightWithout(n, dstCommunity) +" - "+ this.communityVolumeWithout(n, srcCommunity) );
+
         first = this.communityWeightWithout(n, dstCommunity) - this.communityWeightWithout(n, srcCommunity);
+//        logger.info("First first: "+first);
         first = first / totalEdgeWeight;
+
+//        logger.info("First: "+first);
 
         second = (this.communityVolumeWithout(n, srcCommunity) - this.communityVolumeWithout(n, dstCommunity)) * nodeVolume(n);
         second = second / (2 * Math.pow(totalEdgeWeight, 2));
+
+//        logger.info("Second: "+second);
+
+//        logger.info("Delta: "+(first+second));
 
         return first + second;
     }
@@ -118,7 +156,8 @@ public class Louvain {
         double weight = 0.0;
         for (Relationship r : n.getRelationships(Direction.BOTH)) {
             if (!r.getOtherNode(n).equals(n))
-                weight += this.weight(r);
+                if (r.getOtherNode(n).getProperty(communityProperty).equals(cId))
+                    weight += this.weight(r);
         }
         return weight;
     }
@@ -126,7 +165,8 @@ public class Louvain {
     private double communityWeight(Node n, long cId) {
         double weight = 0.0;
         for (Relationship r : n.getRelationships(Direction.BOTH)) {
-            weight += this.weight(r);
+            if (r.getOtherNode(n).getProperty(communityProperty).equals(cId))
+                weight += this.weight(r);
         }
         return weight;
     }

@@ -28,7 +28,11 @@ public class GraphUtils {
 
     public static void print(GraphDatabaseService g) {
         for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
-            log.info(n + " " + n.getLabels() + " " + n.getPropertyKeys());
+            StringBuilder sb = new StringBuilder(n + " " + n.getLabels() + " ");
+            for (String pk : n.getPropertyKeys()) {
+                sb.append(pk + ":" + n.getProperty(pk) + " ");
+            }
+            log.info(sb.toString());
         }
         log.info("---------------------------");
         for (Relationship r : GlobalGraphOperations.at(g).getAllRelationships()) {
