@@ -1,5 +1,6 @@
 package com.besil.neo4jsna.engine;
 
+import com.besil.neo4jsna.algorithms.Louvain;
 import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.SingleNodeScanAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
@@ -17,6 +18,15 @@ public class GraphAlgoEngine {
 
     public GraphAlgoEngine(GraphDatabaseService g) {
         this.graph = g;
+    }
+
+    public void execute(Louvain louvain) {
+        louvain.init(graph);
+
+        try( Transaction tx = graph.beginTx() ) {
+            louvain.firstPhase(graph);
+            louvain.secondPhase(graph);
+        }
     }
 
     public void execute(DirectedModularity modularity) {
@@ -42,7 +52,6 @@ public class GraphAlgoEngine {
     public void execute(CypherAlgorithm algorithm) {
         Timer timer = Timer.newTimer();
         Result result = this.graph.execute(algorithm.getQuery());
-//        ExecutionResult result = engine.execute(algorithm.getQuery());
         algorithm.collectResult(result);
         timer.stop();
         log.info(algorithm.getName() + " execution: " + timer.totalTime());

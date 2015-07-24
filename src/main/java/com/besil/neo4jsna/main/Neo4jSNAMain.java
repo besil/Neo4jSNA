@@ -22,7 +22,6 @@ public class Neo4jSNAMain {
 		String path = database;
 		long nodeCount, relsCount;
 		
-		
 		// Open a database instance
 		GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
 		try (Transaction tx = g.beginTx() ) {
@@ -38,9 +37,6 @@ public class Neo4jSNAMain {
 		GraphAlgoEngine engine = new GraphAlgoEngine(g);
 		if( args.length > 1 && args[1].equals("off") )
 			engine.disableLogging();
-
-        Demon demon = new Demon(g);
-        engine.execute(demon);
 
 		LabelPropagation lp = new LabelPropagation();
 		// Starts the algorithm on the given graph g
