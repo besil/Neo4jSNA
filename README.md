@@ -3,19 +3,19 @@
 Neo4jSNA is a Java based collection of useful algorithms for Social Network analysis, based on Neo4j, the graph database.
 Actually, all algorithms are implemented using the Neo4j Embedded mode.
 
-The project uses Maven for dependency management. The other used library is the fastutil project (http://fastutil.di.unimi.it/):
+The project uses Maven for dependency management. The other used library is the <a href="http://fastutil.di.unimi.it/" target="_blank">fastutil project</a>:
 if you don't know it yet, you should definitely check it.
 
 The implemented algorithms are, for now:
 
-- [x] Page Rank	(http://en.wikipedia.org/wiki/PageRank)
+- [x] <a href="http://en.wikipedia.org/wiki/PageRank" target="_blank">PageRank</a>:
 - [x] Connected Components
 - [x] Triangle count
-- [ ] Community Detection (http://arxiv.org/pdf/0906.0612v2.pdf)
-	- [x] Label Propagation	(http://arxiv.org/pdf/0709.2938v1.pdf)
-	- [ ] Louvain Method (http://arxiv.org/pdf/0803.0476v2.pdf)
-	- [ ] Demon (http://www.michelecoscia.com/wp-content/uploads/2012/08/cosciakdd12.pdf)
-	- [x] Modularity (http://arxiv.org/pdf/physics/0602124.pdf)
+- [ ] <a href="http://arxiv.org/pdf/0906.0612v2.pdf" target="_blank">Community Detection</a>
+	- [x] <a href="http://arxiv.org/pdf/0709.2938v1.pdf" target="_blank">Label Propagation</a>
+	- [ ] <a href="http://arxiv.org/pdf/0803.0476v2.pdf" target="_blank">Louvain Method</a>
+	- [ ] <a href="http://www.michelecoscia.com/wp-content/uploads/2012/08/cosciakdd12.pdf" target="_blank">Demon</a>
+	- [x] <a href="http://arxiv.org/pdf/physics/0602124.pdf" target="_blank">Modularity</a>
 
 
 # QuickStart
