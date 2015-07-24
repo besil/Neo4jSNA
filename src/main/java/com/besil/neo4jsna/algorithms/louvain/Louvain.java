@@ -16,36 +16,41 @@ import java.util.logging.Logger;
  */
 public class Louvain {
     private final Logger logger = Logger.getLogger(Louvain.class.getName());
-    private final String communityProperty = "community", activeProperty = "layer";
+    private final String communityProperty = "community", layerProperty = "layer";
     private final GraphDatabaseService g;
     private final double totalEdgeWeight;
-    private Label nodeLabel;
-    private IndexDefinition communityIndex, activeIndex;
+    private Label activeLabel, newLayer;
+    private IndexDefinition communityIndex, layerIndex, newLayerIndex;
     private int layerCount;
+    private int passCount = 0;
 
     public Louvain(GraphDatabaseService g) {
         this.g = g;
         layerCount = 0;
-        this.nodeLabel = DynamicLabel.label("nodes");
+        this.activeLabel = DynamicLabel.label("activeNode");
+        this.newLayer = DynamicLabel.label("newLayer");
 
         try (Transaction tx = g.beginTx()) {
-            communityIndex = g.schema().indexFor(nodeLabel).on(communityProperty).create();
-            activeIndex = g.schema().indexFor(nodeLabel).on(activeProperty).create();
+            communityIndex = g.schema().indexFor(activeLabel).on(communityProperty).create();
+            layerIndex = g.schema().indexFor(activeLabel).on(layerProperty).create();
+            newLayerIndex = g.schema().indexFor(newLayer).on(communityProperty).create();
             tx.success();
         }
 
         try (Transaction tx = g.beginTx()) {
             Schema schema = g.schema();
             schema.awaitIndexOnline(communityIndex, 10, TimeUnit.SECONDS);
-            schema.awaitIndexOnline(activeIndex, 10, TimeUnit.SECONDS);
+            schema.awaitIndexOnline(layerIndex, 10, TimeUnit.SECONDS);
+            schema.awaitIndexOnline(newLayerIndex, 10, TimeUnit.SECONDS);
             tx.success();
         }
 
         try (Transaction tx = g.beginTx()) {
             for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
-                n.addLabel(this.nodeLabel);
-                n.setProperty(communityProperty, n.getId() + ":" + layerCount);
-                n.setProperty(activeProperty, true);
+                n.addLabel(this.activeLabel);
+//                n.setProperty(communityProperty, n.getId() + ":" + layerCount);
+                n.setProperty(communityProperty, n.getId());
+                n.setProperty(layerProperty, layerCount);
             }
             tx.success();
         }
@@ -53,8 +58,6 @@ public class Louvain {
 
         double edgeWeight = 0.0;
         try (Transaction tx = g.beginTx()) {
-            GraphUtils.print(g);
-
             for (Relationship r : GlobalGraphOperations.at(g).getAllRelationships()) {
                 edgeWeight += weight(r);
             }
@@ -64,9 +67,16 @@ public class Louvain {
         logger.info("Total edge weight: " + totalEdgeWeight);
     }
 
-    public void pass() {
+    public int pass() {
+        String mex = "Starting pass " + passCount;
+        logger.info("----------");
+        logger.info(mex);
+        logger.info("----------");
+
+        logger.info("--------- Start Moving phase");
         try (Transaction tx = g.beginTx()) {
             this.firstPhase();
+            GraphUtils.print(g);
             tx.success();
         }
 
@@ -75,14 +85,24 @@ public class Louvain {
         engine.execute(um);
         logger.info("Modularity: " + um.getResult());
 
+        logger.info("--------- Start Aggregation phase");
+        int totMacroNodes = 0;
         try (Transaction tx = g.beginTx()) {
-            this.secondPhase();
+            totMacroNodes = this.secondPhase();
+            GraphUtils.print(g);
             tx.success();
         }
+        passCount++;
+
+        return totMacroNodes;
     }
 
     public void execute() {
-        this.pass();
+        int totMacroNodes;
+
+        do {
+            totMacroNodes = this.pass();
+        } while (totMacroNodes != 0);
     }
 
     public void firstPhase() {
@@ -90,48 +110,43 @@ public class Louvain {
 
         do {
             movements = 0;
-            for (Node src : GlobalGraphOperations.at(g).getAllNodes()) {
-                logger.info("Src: " + src);
-                String srcCommunity = (String) src.getProperty(communityProperty);
-                String bestCommunity = srcCommunity;
+            ResourceIterator<Node> nodes = g.findNodes(activeLabel);
+            while (nodes.hasNext()) {
+                Node src = nodes.next();
+//                logger.info("Src: " + src);
+                long srcCommunity = (long) src.getProperty(communityProperty);
+                long bestCommunity = srcCommunity;
                 double bestDelta = 0.0;
 
-                for (Relationship r : src.getRelationships(Direction.BOTH)) {
+                Iterable<Relationship> rels = passCount == 0 ? src.getRelationships(Direction.BOTH) : src.getRelationships(Direction.BOTH, LouvainRels.NewEdges);
+                for (Relationship r : rels) {
+                    logger.info(r.getType().toString());
                     Node neigh = r.getOtherNode(src);
-                    String neighCommunity = (String) neigh.getProperty(communityProperty);
+                    long neighCommunity = (long) neigh.getProperty(communityProperty);
 
+                    logger.info("Calculating movement for (" + src + ", " + neigh + ")");
                     double delta = this.calculateDelta(src, srcCommunity, neighCommunity);
-                    logger.info("    Dst: " + neigh + " -> " + delta);
+//                    logger.info("    Dst: " + neigh + " -> " + delta);
 
                     if (delta > bestDelta) {
-//                        logger.info("        Moving "+src+" to community "+neighCommunity);
-//                        src.setProperty(communityProperty, neighCommunity);
-//                        movements++;
                         bestDelta = delta;
                         bestCommunity = neighCommunity;
                     }
                 }
 
                 if (srcCommunity != bestCommunity) {
-                    logger.info("        Moving " + src + " to community " + bestCommunity);
+                    logger.info("**** Moving " + src + " to community " + bestCommunity);
                     src.setProperty(communityProperty, bestCommunity);
                     movements++;
                 }
             }
 
-
-            GraphUtils.print(g);
             logger.info("Movements: " + movements);
 
-//            try {
-//                Thread.sleep(5000);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
         } while (movements != 0);
     }
 
-    private double calculateDelta(Node n, String srcCommunity, String dstCommunity) {
+    private double calculateDelta(Node n, long srcCommunity, long dstCommunity) {
         double first, second;
 
 //        logger.info("Diff between: "+this.communityWeightWithout(n, dstCommunity) +" - "+ this.communityVolumeWithout(n, srcCommunity) );
@@ -155,7 +170,7 @@ public class Louvain {
         return 1.0;
     }
 
-    private double communityWeightWithout(Node n, String cId) {
+    private double communityWeightWithout(Node n, long cId) {
         double weight = 0.0;
         for (Relationship r : n.getRelationships(Direction.BOTH)) {
             if (!r.getOtherNode(n).equals(n))
@@ -185,9 +200,9 @@ public class Louvain {
         return vol;
     }
 
-    private double communityVolumeWithout(Node n, String cId) {
+    private double communityVolumeWithout(Node n, long cId) {
         double vol = 0;
-        ResourceIterator<Node> members = g.findNodes(nodeLabel, communityProperty, cId);
+        ResourceIterator<Node> members = g.findNodes(activeLabel, communityProperty, cId);
         while (members.hasNext()) {
             Node member = members.next();
             if (!member.equals(n))
@@ -199,7 +214,7 @@ public class Louvain {
     private double communityVolume(String cId) {
         double vol = 0;
 
-        ResourceIterator<Node> members = g.findNodes(nodeLabel, communityProperty, cId);
+        ResourceIterator<Node> members = g.findNodes(activeLabel, communityProperty, cId);
         while (members.hasNext()) {
             Node member = members.next();
             vol += nodeVolume(member);
@@ -207,22 +222,62 @@ public class Louvain {
         return vol;
     }
 
-    public void secondPhase() {
+    public int secondPhase() {
         layerCount++;
+        int totMacroNodes = 0;
 
-        for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
-            String[] split = ((String) n.getProperty(communityProperty)).split(":");
-            String cId = split[0] + ":" + layerCount;
-            Node macroNode = g.findNode(nodeLabel, communityProperty, cId);
-            if (macroNode == null) {
-                macroNode = g.createNode(nodeLabel);
-                macroNode.setProperty(communityProperty, cId);
-                macroNode.setProperty(activeProperty, true);
-            }
-            n.createRelationshipTo(macroNode, LouvainRels.Layer);
-            n.setProperty(activeProperty, false);
-        }
+        g.findNodes(newLayer).forEachRemaining(n -> n.removeLabel(newLayer));
+
         GraphUtils.print(g);
+        if (true) throw new RuntimeException();
+
+        ResourceIterator<Node> activeNodes = g.findNodes(activeLabel);
+        while (activeNodes.hasNext()) {
+            Node activeNode = activeNodes.next();
+            long cId = (long) activeNode.getProperty(communityProperty);
+
+            Node macroNode = g.findNode(newLayer, communityProperty, cId);
+            if (macroNode == null) {
+                totMacroNodes++;
+                macroNode = g.createNode(newLayer);
+//                macroNode.addLabel(newLayer);
+                macroNode.setProperty(communityProperty, cId);
+                macroNode.setProperty(layerProperty, layerCount);
+            }
+            // Create a relationship to the original node
+            activeNode.createRelationshipTo(macroNode, LouvainRels.Layer);
+
+            // Now you must connect the macronodes (if any)!
+            for (Relationship r : activeNode.getRelationships()) {
+                if (!r.isType(LouvainRels.Layer)) {
+                    Node neigh = r.getOtherNode(activeNode);
+
+                    long neighCid = (long) neigh.getProperty(communityProperty);
+                    Node otherMacroNode = g.findNode(newLayer, communityProperty, neighCid);
+                    if (otherMacroNode == null) {
+                        totMacroNodes++;
+                        otherMacroNode = g.createNode(newLayer);
+                        otherMacroNode.setProperty(communityProperty, cId);
+                        otherMacroNode.setProperty(layerProperty, layerCount);
+                    }
+                    if (!otherMacroNode.equals(macroNode)) {
+                        otherMacroNode.createRelationshipTo(macroNode, LouvainRels.NewEdges);
+                        macroNode.createRelationshipTo(otherMacroNode, LouvainRels.NewEdges);
+                    }
+
+                }
+            }
+            activeNode.removeLabel(activeLabel);
+        }
+
+        ResourceIterator<Node> macros = g.findNodes(newLayer);
+        while (macros.hasNext()) {
+            Node next = macros.next();
+            next.removeLabel(newLayer);
+            next.addLabel(activeLabel);
+        }
+
+        return totMacroNodes;
     }
 
     public LouvainResult getResult() {
@@ -236,6 +291,6 @@ public class Louvain {
     }
 
     enum LouvainRels implements RelationshipType {
-        Layer
+        Layer, NewEdges
     }
 }
