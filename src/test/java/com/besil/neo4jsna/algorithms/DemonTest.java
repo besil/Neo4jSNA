@@ -1,16 +1,19 @@
 package com.besil.neo4jsna.algorithms;
 
 import com.besil.neo4jsna.InMemoryNeoTest;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Relationship;
+import org.neo4j.graphdb.RelationshipType;
 import org.neo4j.graphdb.ResourceIterator;
 import org.neo4j.helpers.collection.IteratorUtil;
 
 import java.util.Iterator;
+import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
 /**
@@ -81,6 +84,44 @@ public class DemonTest extends InMemoryNeoTest {
 
         demon.clearEgoNetwork(root);
 
+    }
+
+    protected void initGraph() {
+        this.nodes = new Int2ObjectOpenHashMap<>();
+        RelationshipType knows = MyRelationshipTypes.KNOWS;
+
+        IntStream.range(0, 6).forEach(n -> nodes.put(n, this.createNode(n)));
+
+        nodes.get(0).createRelationshipTo(nodes.get(1), knows);
+        nodes.get(0).createRelationshipTo(nodes.get(2), knows);
+        nodes.get(0).createRelationshipTo(nodes.get(3), knows);
+        nodes.get(0).createRelationshipTo(nodes.get(4), knows);
+        nodes.get(0).createRelationshipTo(nodes.get(5), knows);
+
+        nodes.get(1).createRelationshipTo(nodes.get(2), knows);
+        nodes.get(3).createRelationshipTo(nodes.get(4), knows);
+
+        IntStream.range(6, 11).forEach(n -> nodes.put(n, this.createNode(n)));
+
+        nodes.get(3).createRelationshipTo(nodes.get(6), knows);
+        nodes.get(4).createRelationshipTo(nodes.get(7), knows);
+        nodes.get(5).createRelationshipTo(nodes.get(8), knows);
+
+        nodes.get(4).createRelationshipTo(nodes.get(9), knows);
+        nodes.get(4).createRelationshipTo(nodes.get(10), knows);
+
+        nodes.get(9).createRelationshipTo(nodes.get(10), knows);
+
+    }
+
+    private Node createNode(int id) {
+        Node n = db.createNode();
+        n.setProperty("id", id);
+        return n;
+    }
+
+    enum MyRelationshipTypes implements RelationshipType {
+        KNOWS
     }
 
 }
