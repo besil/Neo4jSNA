@@ -7,13 +7,16 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Created by besil on 01/06/15.
  */
 public class GraphUtils {
+    private static final Logger log = Logger.getLogger(GraphUtils.class.getName());
+
     public static Iterator<Relationship> getRelationshisByNodeAndRelationshipType(GraphDatabaseService g, Label label, Demon.DemonRelType relType) {
-        List<Relationship> rels = new LinkedList<Relationship>();
+        List<Relationship> rels = new LinkedList<>();
         ResourceIterator<Node> nodes = g.findNodes(label);
         while (nodes.hasNext()) {
             Node node = nodes.next();
@@ -25,19 +28,19 @@ public class GraphUtils {
 
     public static void print(GraphDatabaseService g) {
         for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
-            System.out.println(n + " " + n.getLabels());
+            log.info(n + " " + n.getLabels() + " " + n.getPropertyKeys());
         }
-        System.out.println("---------------------------");
+        log.info("---------------------------");
         for (Relationship r : GlobalGraphOperations.at(g).getAllRelationships()) {
-            System.out.println(r.getStartNode() + " -[" + r.getType() + "-> " + r.getEndNode());
+            log.info(r.getStartNode() + " -[" + r.getType() + "-> " + r.getEndNode());
         }
     }
 
 //    public static void print(GraphDatabaseService neo) {
 //
-//        System.out.println("---------------");
-//        System.out.println("Node count: " + GraphUtils.getNodeCount(neo));
-//        System.out.println("Rel count: " + GraphUtils.getEdgeCount(neo));
+//        log.info("---------------");
+//        log.info("Node count: " + GraphUtils.getNodeCount(neo));
+//        log.info("Rel count: " + GraphUtils.getEdgeCount(neo));
 //
 //        GlobalGraphOperations.at(neo).getAllNodes().forEach(node -> {
 //            StringBuilder sb = new StringBuilder();
@@ -45,9 +48,9 @@ public class GraphUtils {
 //            for (String key : node.getPropertyKeys())
 //                sb.append(key).append(":").append(node.getProperty(key)).append(" ");
 //            sb.append(")");
-//            System.out.println(sb.toString());
+//            log.info(sb.toString());
 //        });
-//        System.out.println("***************");
+//        log.info("***************");
 //        GlobalGraphOperations.at(neo).getAllRelationships().forEach(rel -> {
 //            StringBuilder sb = new StringBuilder();
 //            sb.append(rel.getId()).append(": ");
@@ -55,9 +58,9 @@ public class GraphUtils {
 //            sb.append(rel.getType().name()).append(" ");
 //            for (String key : rel.getPropertyKeys())
 //                sb.append(key).append(":").append(rel.getProperty(key)).append(" ");
-//            System.out.println(sb.toString());
+//            log.info(sb.toString());
 //        });
-//        System.out.println("---------------");
+//        log.info("---------------");
 //    }
 
     public static long getNodeCount(GraphDatabaseService db) {

@@ -15,7 +15,6 @@ import org.neo4j.test.TestGraphDatabaseFactory;
  */
 public abstract class InMemoryNeoTest {
     protected static GraphDatabaseService db;
-    protected Transaction tx;
     protected Int2ObjectMap<Node> nodes;
 
     @BeforeClass
@@ -27,13 +26,15 @@ public abstract class InMemoryNeoTest {
 
     @Before
     public void setUp() {
-        tx = db.beginTx();
-        this.initGraph();
+        try (Transaction tx = db.beginTx()) {
+            this.initGraph();
+            tx.success();
+        }
     }
 
     @After
     public void tearDown() {
-        tx.close();
+        db.shutdown();
     }
 
     protected enum CommonsRelationshipTypes implements RelationshipType {
