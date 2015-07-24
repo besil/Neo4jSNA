@@ -6,7 +6,6 @@ Actually, all algorithms are implemented using the Neo4j Embedded mode.
 The project uses Maven for dependency management. The other used library is the <a href="http://fastutil.di.unimi.it/" target="_blank">fastutil project</a>:
 if you don't know it yet, you should definitely check it.
 
-<a href="http://en.wikipedia.org/wiki/PageRank" target="_blank">PageRank</a>:
 The implemented algorithms are, for now:
 
 - [x] <a href="http://en.wikipedia.org/wiki/PageRank" target="_blank">PageRank</a>:
