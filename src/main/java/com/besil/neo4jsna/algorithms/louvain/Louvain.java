@@ -1,7 +1,5 @@
-package com.besil.neo4jsna.algorithms;
+package com.besil.neo4jsna.algorithms.louvain;
 
-import com.besil.neo4jsna.engine.algorithm.SingleNodeScanAlgorithm;
-import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 import org.neo4j.graphdb.Direction;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
@@ -30,5 +28,9 @@ public class Louvain {
         for(Node n : GlobalGraphOperations.at(graph).getAllNodes()) {
             n.setProperty(communityProperty, n.getId());
         }
+    }
+
+    public LouvainResult getResult() {
+        return new LouvainResult();
     }
 }

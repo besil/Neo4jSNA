@@ -1,6 +1,6 @@
 package com.besil.neo4jsna.engine;
 
-import com.besil.neo4jsna.algorithms.Louvain;
+import com.besil.neo4jsna.algorithms.louvain.Louvain;
 import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.SingleNodeScanAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;

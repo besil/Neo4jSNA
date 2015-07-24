@@ -88,7 +88,7 @@ public class DemonTest extends InMemoryNeoTest {
 
     protected void initGraph() {
         this.nodes = new Int2ObjectOpenHashMap<>();
-        RelationshipType knows = MyRelationshipTypes.KNOWS;
+        RelationshipType knows = CommonsRelationshipTypes.KNOWS;
 
         IntStream.range(0, 6).forEach(n -> nodes.put(n, this.createNode(n)));
 
@@ -118,10 +118,6 @@ public class DemonTest extends InMemoryNeoTest {
         Node n = db.createNode();
         n.setProperty("id", id);
         return n;
-    }
-
-    enum MyRelationshipTypes implements RelationshipType {
-        KNOWS
     }
 
 }
