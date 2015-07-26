@@ -29,19 +29,22 @@ public class LouvainTest extends InMemoryNeoTest {
             Node dst = (i + 1) % 3 != 0 ? nodes.get(i + 1) : nodes.get(i - 2);
 
             src.createRelationshipTo(dst, CommonsRelationshipTypes.KNOWS);
-            dst.createRelationshipTo(src, CommonsRelationshipTypes.KNOWS);
+//            dst.createRelationshipTo(src, CommonsRelationshipTypes.KNOWS);
         }
 
-        for (int i = 0; i < 9; i += 3) {
-            Node src = nodes.get(i);
-            Node dst1 = nodes.get((i + 3) % 9);
-            Node dst2 = nodes.get((i + 6) % 9);
+        nodes.get(0).createRelationshipTo(nodes.get(3), CommonsRelationshipTypes.KNOWS);
+        nodes.get(0).createRelationshipTo(nodes.get(6), CommonsRelationshipTypes.KNOWS);
+        nodes.get(3).createRelationshipTo(nodes.get(6), CommonsRelationshipTypes.KNOWS);
 
-            src.createRelationshipTo(dst1, CommonsRelationshipTypes.KNOWS);
-//            dst1.createRelationshipTo(src, CommonsRelationshipTypes.KNOWS);
-            src.createRelationshipTo(dst2, CommonsRelationshipTypes.KNOWS);
-//            dst2.createRelationshipTo(src, CommonsRelationshipTypes.KNOWS);
-        }
+//        for (int i = 0; i < 9; i += 3) {
+//            Node src = nodes.get(i);
+//            Node dst1 = nodes.get((i + 3) % 9);
+//            Node dst2 = nodes.get((i + 6) % 9);
+//            src.createRelationshipTo(dst1, CommonsRelationshipTypes.KNOWS);
+// //            dst1.createRelationshipTo(src, CommonsRelationshipTypes.KNOWS);
+//            src.createRelationshipTo(dst2, CommonsRelationshipTypes.KNOWS);
+// //            dst2.createRelationshipTo(src, CommonsRelationshipTypes.KNOWS);
+//        }
 
     }
 

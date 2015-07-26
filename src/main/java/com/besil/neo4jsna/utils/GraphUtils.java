@@ -30,7 +30,7 @@ public class GraphUtils {
     public static void print(GraphDatabaseService g) {
         log.info("******************************");
         for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
-            StringBuilder sb = new StringBuilder(n + " " + n.getLabels() + " ");
+            StringBuilder sb = new StringBuilder(n.getId() + " " + n.getLabels() + " ");
             List<String> properties = new LinkedList<>();
             n.getPropertyKeys().forEach(k -> properties.add(k));
             Collections.sort(properties);
@@ -42,7 +42,17 @@ public class GraphUtils {
         }
         log.info("---------------------------");
         for (Relationship r : GlobalGraphOperations.at(g).getAllRelationships()) {
-            log.info(r.getStartNode() + " -[" + r.getType() + "-> " + r.getEndNode());
+            StringBuilder sb = new StringBuilder(r.getStartNode().getId() + " -[:" + r.getType() + ", ");
+            List<String> properties = new LinkedList<>();
+            r.getPropertyKeys().forEach(k -> properties.add(k));
+            Collections.sort(properties);
+
+            for (String pk : properties) {
+                sb.append(pk + ":" + r.getProperty(pk) + " ");
+            }
+
+            sb.append("] -> " + r.getEndNode().getId());
+            log.info(sb.toString());
         }
         log.info("******************************");
     }
