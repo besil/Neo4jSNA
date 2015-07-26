@@ -19,7 +19,7 @@ public class Louvain {
     private final String communityProperty = "community", layerProperty = "layer";
     private final GraphDatabaseService g;
     private final double totalEdgeWeight;
-    private Label layerLabel, communityLabel, newLayer;
+    private Label layerLabel, communityLabel, newLayerLabel;
     private IndexDefinition layerIndex, communityIndex, tmpNewLayerIndex;
     private int layerCount;
     private int passCount = 0;
@@ -29,13 +29,13 @@ public class Louvain {
         layerCount = 0;
         this.layerLabel = DynamicLabel.label("layerLabel");
         this.communityLabel = DynamicLabel.label("communityLabel");
-        this.newLayer = DynamicLabel.label("newLayer");
+        this.newLayerLabel = DynamicLabel.label("newLayerLabel");
 
 
         try (Transaction tx = g.beginTx()) {
             this.layerIndex = g.schema().indexFor(layerLabel).on(layerProperty).create();
             this.communityIndex = g.schema().indexFor(communityLabel).on(communityProperty).create();
-            this.tmpNewLayerIndex = g.schema().indexFor(newLayer).on(communityProperty).create();
+            this.tmpNewLayerIndex = g.schema().indexFor(newLayerLabel).on(communityProperty).create();
             tx.success();
         }
 
@@ -122,7 +122,6 @@ public class Louvain {
 
                 Iterable<Relationship> rels = layerCount == 0 ? src.getRelationships(Direction.BOTH) : src.getRelationships(Direction.BOTH, LouvainRels.NewEdges);
                 for (Relationship r : rels) {
-                    logger.info(r.getType().toString());
                     Node neigh = r.getOtherNode(src);
                     long neighCommunity = (long) neigh.getProperty(communityProperty);
 
@@ -225,40 +224,44 @@ public class Louvain {
     public int secondPhase() {
         int totMacroNodes = 0;
 
-//        g.findNodes(newLayer).forEachRemaining(n -> n.removeLabel(newLayer));
-
         // Prendi tutti i nodi del livello corrente
         ResourceIterator<Node> activeNodes = g.findNodes(layerLabel, layerProperty, layerCount);
         while (activeNodes.hasNext()) {
             Node activeNode = activeNodes.next();
+            logger.info("activeNode is " + activeNode.getId());
             long cId = (long) activeNode.getProperty(communityProperty);
 
             // Prendi il macronode associato a questa community
-            Node macroNode = g.findNode(newLayer, communityProperty, cId);
+            Node macroNode = g.findNode(newLayerLabel, communityProperty, cId);
             if (macroNode == null) {    // Se non esiste, crealo
+                logger.info("Creating macronode for community " + cId);
                 totMacroNodes++;
-                macroNode = g.createNode(newLayer);
-                macroNode.addLabel(layerLabel);
-                macroNode.addLabel(communityLabel);
+                macroNode = g.createNode(newLayerLabel);
                 macroNode.setProperty(communityProperty, cId);
                 macroNode.setProperty(layerProperty, layerCount + 1); // e' il nuovo layer
             }
 
             // Create a relationship to the original node
             activeNode.createRelationshipTo(macroNode, LouvainRels.Layer);
+            logger.info("Created -[layer] relationship between " + activeNode.getId() + " to " + macroNode.getId());
+            GraphUtils.print(g);
 
             // Now you must connect the macronodes (if any)!
             for (Relationship r : activeNode.getRelationships()) {
                 if (!r.isType(LouvainRels.Layer)) {
                     Node neigh = r.getOtherNode(activeNode);
+                    logger.info("Neigh node is " + neigh.getId());
 
                     long neighCid = (long) neigh.getProperty(communityProperty);
-                    Node otherMacroNode = g.findNode(newLayer, communityProperty, neighCid);
+                    logger.info("Looking for neighCid: " + neighCid);
+                    GraphUtils.print(g);
+                    Node otherMacroNode = g.findNode(newLayerLabel, communityProperty, neighCid);
                     if (otherMacroNode == null) {
+                        logger.info("Creating ANOTHER macroNode for community " + neighCid);
                         totMacroNodes++;
-                        otherMacroNode = g.createNode(newLayer);
-                        otherMacroNode.setProperty(communityProperty, cId);
-                        otherMacroNode.setProperty(layerProperty, layerCount);
+                        otherMacroNode = g.createNode(newLayerLabel);
+                        otherMacroNode.setProperty(communityProperty, neighCid);
+                        otherMacroNode.setProperty(layerProperty, layerCount + 1);
                     }
                     if (!otherMacroNode.equals(macroNode)) {
                         otherMacroNode.createRelationshipTo(macroNode, LouvainRels.NewEdges);
@@ -271,10 +274,12 @@ public class Louvain {
             activeNode.removeLabel(communityLabel);
         }
 
-        ResourceIterator<Node> macros = g.findNodes(newLayer);
+        ResourceIterator<Node> macros = g.findNodes(newLayerLabel);
         while (macros.hasNext()) {
             Node next = macros.next();
-            next.removeLabel(newLayer);
+            next.removeLabel(newLayerLabel);
+            next.addLabel(communityLabel);
+            next.addLabel(layerLabel);
         }
 
         layerCount++;

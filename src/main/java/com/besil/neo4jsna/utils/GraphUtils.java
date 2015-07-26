@@ -28,6 +28,7 @@ public class GraphUtils {
     }
 
     public static void print(GraphDatabaseService g) {
+        log.info("******************************");
         for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
             StringBuilder sb = new StringBuilder(n + " " + n.getLabels() + " ");
             List<String> properties = new LinkedList<>();
@@ -43,6 +44,7 @@ public class GraphUtils {
         for (Relationship r : GlobalGraphOperations.at(g).getAllRelationships()) {
             log.info(r.getStartNode() + " -[" + r.getType() + "-> " + r.getEndNode());
         }
+        log.info("******************************");
     }
 
 //    public static void print(GraphDatabaseService neo) {
