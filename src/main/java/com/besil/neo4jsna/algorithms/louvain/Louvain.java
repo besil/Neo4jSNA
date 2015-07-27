@@ -23,7 +23,7 @@ public class Louvain {
     private final GraphDatabaseService g;
     private final double totalEdgeWeight;
     private final LouvainResult louvainResult;
-    private final int batchSize = 250_000;
+    private final int batchSize = 100_000;
     private Label layerLabel, communityLabel, newLayerLabel;
     private IndexDefinition layerIndex, communityIndex, tmpNewLayerIndex;
     private int layerCount = 0;
@@ -252,7 +252,7 @@ public class Louvain {
             if (++count % 1000 == 0)
                 logger.info("Computed " + count + " nodes");
             Node activeNode = activeNodes.next();
-            long activeNodeId = activeNode.hasProperty("id") ? (int) activeNode.getProperty("id") : activeNode.getId();
+            long activeNodeId = activeNode.hasProperty("id") ? Integer.parseInt((String) activeNode.getProperty("id")) : activeNode.getId();
             long cId = (long) activeNode.getProperty(communityProperty);
 
             louvainLayer.add(activeNodeId, cId);
