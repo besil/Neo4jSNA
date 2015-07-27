@@ -33,8 +33,8 @@ public class LouvainTest extends InMemoryNeoTest {
         }
 
         nodes.get(0).createRelationshipTo(nodes.get(3), CommonsRelationshipTypes.KNOWS);
-        nodes.get(0).createRelationshipTo(nodes.get(6), CommonsRelationshipTypes.KNOWS);
         nodes.get(3).createRelationshipTo(nodes.get(6), CommonsRelationshipTypes.KNOWS);
+        nodes.get(6).createRelationshipTo(nodes.get(0), CommonsRelationshipTypes.KNOWS);
 
 //        for (int i = 0; i < 9; i += 3) {
 //            Node src = nodes.get(i);
