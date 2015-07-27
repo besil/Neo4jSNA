@@ -348,8 +348,11 @@ public class Louvain {
     }
 
     public void clean() {
-        for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
-            n.removeProperty(communityProperty);
+        try (Transaction tx = g.beginTx()) {
+            for (Node n : GlobalGraphOperations.at(g).getAllNodes()) {
+                n.removeProperty(communityProperty);
+            }
+            tx.success();
         }
     }
 
