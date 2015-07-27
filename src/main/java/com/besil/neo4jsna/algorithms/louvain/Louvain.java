@@ -94,11 +94,9 @@ public class Louvain {
         engine.execute(um);
 
         int totMacroNodes;
-        try (Transaction tx = g.beginTx()) {
-            totMacroNodes = this.secondPhase();
-            tx.success();
-            logger.info("Created " + totMacroNodes);
-        }
+        totMacroNodes = this.secondPhase();
+        logger.info("Created " + totMacroNodes);
+
         layerCount++;
         return totMacroNodes;
     }
@@ -115,9 +113,6 @@ public class Louvain {
             // itera solo per i nodi del livello corrente
             ResourceIterator<Node> nodes = g.findNodes(layerLabel, layerProperty, layerCount);
             while (nodes.hasNext()) {
-                if (++count % 1000 == 0)
-                    logger.info("Computed " + count + " nodes");
-
                 Node src = nodes.next();
 //                logger.info("Src: " + src);
                 long srcCommunity = (long) src.getProperty(communityProperty);
@@ -146,6 +141,7 @@ public class Louvain {
                 }
 
                 if (++countOperations % batchSize == 0) {
+                    logger.info("Committing...");
                     tx.success();
                     tx.close();
                     tx = g.beginTx();
@@ -228,6 +224,9 @@ public class Louvain {
 
     public int secondPhase() {
         int totMacroNodes = 0;
+        int counterOps = 0;
+
+        Transaction tx = g.beginTx();
 
         // Check if a new layer must be created
         LongSet macroNodesCommunities = new LongOpenHashSet();
@@ -272,13 +271,18 @@ public class Louvain {
                 macroNode = g.createNode(newLayerLabel);
                 macroNode.setProperty(communityProperty, cId);
                 macroNode.setProperty(layerProperty, layerCount + 1); // e' il nuovo layer
+
+                tx = this.batchCommit(++counterOps, tx, g);
             }
 
             // Create a relationship to the original node
             activeNode.createRelationshipTo(macroNode, LouvainRels.Layer);
+            tx = this.batchCommit(++counterOps, tx, g);
 
             activeNode.removeLabel(layerLabel);
+            tx = this.batchCommit(++counterOps, tx, g);
             activeNode.removeLabel(communityLabel);
+            tx = this.batchCommit(++counterOps, tx, g);
         }
 
 
@@ -297,11 +301,13 @@ public class Louvain {
                         Relationship macroRel = getRelationshipBetween(macroNode, otherMacroNode, Direction.BOTH, LouvainRels.NewEdges);
                         if (macroRel == null) {
                             macroRel = macroNode.createRelationshipTo(otherMacroNode, LouvainRels.NewEdges);
+                            tx = this.batchCommit(++counterOps, tx, g);
                             macroRel.setProperty(weightProperty, 0.0);
+                            tx = this.batchCommit(++counterOps, tx, g);
                         }
                         double w = (double) macroRel.getProperty(weightProperty);
                         macroRel.setProperty(weightProperty, w + 1.0);
-
+                        tx = this.batchCommit(++counterOps, tx, g);
                     }
                 }
             }
@@ -311,11 +317,26 @@ public class Louvain {
         while (macros.hasNext()) {
             Node next = macros.next();
             next.removeLabel(newLayerLabel);
+            tx = this.batchCommit(++counterOps, tx, g);
             next.addLabel(communityLabel);
+            tx = this.batchCommit(++counterOps, tx, g);
             next.addLabel(layerLabel);
+            tx = this.batchCommit(++counterOps, tx, g);
         }
 
+        tx.success();
+        tx.close();
+
         return totMacroNodes;
+    }
+
+    private Transaction batchCommit(long counterOps, Transaction tx, GraphDatabaseService g) {
+        if (++counterOps % batchSize == 0) {
+            tx.success();
+            tx.close();
+            tx = g.beginTx();
+        }
+        return tx;
     }
 
     private Relationship getRelationshipBetween(Node n1, Node n2, Direction dir, RelationshipType... relTypes) {
