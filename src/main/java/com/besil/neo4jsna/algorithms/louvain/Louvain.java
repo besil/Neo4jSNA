@@ -252,7 +252,7 @@ public class Louvain {
             if (++count % 1000 == 0)
                 logger.info("Computed " + count + " nodes");
             Node activeNode = activeNodes.next();
-            long activeNodeId = activeNode.hasProperty("id") ? Long.parseInt((String) activeNode.getProperty("id")) : activeNode.getId();
+            long activeNodeId = activeNode.hasProperty("id") ? Long.parseLong((String) activeNode.getProperty("id")) : activeNode.getId();
             long cId = (long) activeNode.getProperty(communityProperty);
 
             louvainLayer.add(activeNodeId, cId);
