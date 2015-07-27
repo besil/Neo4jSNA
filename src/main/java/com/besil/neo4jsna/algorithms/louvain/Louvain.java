@@ -2,7 +2,6 @@ package com.besil.neo4jsna.algorithms.louvain;
 
 import com.besil.neo4jsna.engine.GraphAlgoEngine;
 import com.besil.neo4jsna.measures.UndirectedModularity;
-import com.besil.neo4jsna.utils.GraphUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import org.neo4j.graphdb.*;
@@ -11,6 +10,8 @@ import org.neo4j.graphdb.schema.Schema;
 import org.neo4j.tooling.GlobalGraphOperations;
 
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -24,14 +25,15 @@ public class Louvain {
     private final LouvainResult louvainResult;
     private Label layerLabel, communityLabel, newLayerLabel;
     private IndexDefinition layerIndex, communityIndex, tmpNewLayerIndex;
-    private int layerCount;
-    private int passCount = 0;
+    private int layerCount = 0;
     private int macroNodeCount = 0;
 
     public Louvain(GraphDatabaseService g) {
+        for (Handler h : Logger.getLogger("").getHandlers())
+            h.setLevel(Level.INFO);
+
         this.louvainResult = new LouvainResult();
         this.g = g;
-        layerCount = 0;
         this.layerLabel = DynamicLabel.label("layerLabel");
         this.communityLabel = DynamicLabel.label("communityLabel");
         this.newLayerLabel = DynamicLabel.label("newLayerLabel");
@@ -71,57 +73,48 @@ public class Louvain {
             tx.success();
         }
         totalEdgeWeight = edgeWeight;
-        logger.info("Total edge weight: " + totalEdgeWeight);
     }
 
     public void execute() {
         do {
+            logger.info("Layer count: " + layerCount);
             macroNodeCount = this.pass();
         } while (macroNodeCount != 0);
-
-        logger.info("Final graph is: ");
-        try (Transaction tx = g.beginTx()) {
-            GraphUtils.print(g);
-        }
     }
 
     public int pass() {
-        logger.info("----------");
-        logger.info("Starting pass " + passCount);
-        logger.info("----------");
-
-        logger.info("********** Start Moving phase");
         try (Transaction tx = g.beginTx()) {
             this.firstPhase();
-            GraphUtils.print(g);
             tx.success();
         }
 
+        logger.info("Starting modularity...");
         GraphAlgoEngine engine = new GraphAlgoEngine(g);
         UndirectedModularity um = new UndirectedModularity(g);
         engine.execute(um);
-        logger.info("Modularity: " + um.getResult());
 
-        logger.info("--------- Start Aggregation phase");
         int totMacroNodes;
         try (Transaction tx = g.beginTx()) {
             totMacroNodes = this.secondPhase();
-            GraphUtils.print(g);
             tx.success();
+            logger.info("Created " + totMacroNodes);
         }
-        passCount++;
-
+        layerCount++;
         return totMacroNodes;
     }
 
     public void firstPhase() {
         int movements;
+        int count = 0;
 
         do {
             movements = 0;
             // itera solo per i nodi del livello corrente
             ResourceIterator<Node> nodes = g.findNodes(layerLabel, layerProperty, layerCount);
             while (nodes.hasNext()) {
+                if (++count % 1000 == 0)
+                    logger.info("Computed " + count + " nodes");
+
                 Node src = nodes.next();
 //                logger.info("Src: " + src);
                 long srcCommunity = (long) src.getProperty(communityProperty);
@@ -134,7 +127,6 @@ public class Louvain {
                     if (!src.equals(neigh)) {
                         long neighCommunity = (long) neigh.getProperty(communityProperty);
 
-                        logger.info("Calculating movement for (" + src + ", " + neigh + ")");
                         double delta = this.calculateDelta(src, srcCommunity, neighCommunity);
 //                    logger.info("    Dst: " + neigh + " -> " + delta);
 
@@ -146,31 +138,23 @@ public class Louvain {
                 }
 
                 if (srcCommunity != bestCommunity) {
-                    logger.info("**** Moving " + src + " to community " + bestCommunity);
                     src.setProperty(communityProperty, bestCommunity);
                     movements++;
                 }
             }
-            logger.info("Movements: " + movements);
+
+            logger.info("Movements so far: " + movements);
         } while (movements != 0);
     }
 
     private double calculateDelta(Node n, long srcCommunity, long dstCommunity) {
         double first, second;
 
-//        logger.info("Diff between: "+this.communityWeightWithout(n, dstCommunity) +" - "+ this.communityVolumeWithout(n, srcCommunity) );
         first = this.communityWeightWithout(n, dstCommunity) - this.communityWeightWithout(n, srcCommunity);
-//        logger.info("First first: "+first);
         first = first / totalEdgeWeight;
-
-//        logger.info("First: "+first);
 
         second = (this.communityVolumeWithout(n, srcCommunity) - this.communityVolumeWithout(n, dstCommunity)) * nodeVolume(n);
         second = second / (2 * Math.pow(totalEdgeWeight, 2));
-
-//        logger.info("Second: "+second);
-
-//        logger.info("Delta: "+(first+second));
 
         return first + second;
     }
@@ -189,14 +173,14 @@ public class Louvain {
         return weight;
     }
 
-    private double communityWeight(Node n, String cId) {
-        double weight = 0.0;
-        for (Relationship r : n.getRelationships(Direction.BOTH)) {
-            if (r.getOtherNode(n).getProperty(communityProperty).equals(cId))
-                weight += this.weight(r);
-        }
-        return weight;
-    }
+//    private double communityWeight(Node n, String cId) {
+//        double weight = 0.0;
+//        for (Relationship r : n.getRelationships(Direction.BOTH)) {
+//            if (r.getOtherNode(n).getProperty(communityProperty).equals(cId))
+//                weight += this.weight(r);
+//        }
+//        return weight;
+//    }
 
     private double nodeVolume(Node n) {
         double vol = 0;
@@ -220,16 +204,15 @@ public class Louvain {
         return vol;
     }
 
-    private double communityVolume(String cId) {
-        double vol = 0;
-
-        ResourceIterator<Node> members = g.findNodes(communityLabel, communityProperty, cId);
-        while (members.hasNext()) {
-            Node member = members.next();
-            vol += nodeVolume(member);
-        }
-        return vol;
-    }
+//    private double communityVolume(String cId) {
+//        double vol = 0;
+//        ResourceIterator<Node> members = g.findNodes(communityLabel, communityProperty, cId);
+//        while (members.hasNext()) {
+//            Node member = members.next();
+//            vol += nodeVolume(member);
+//        }
+//        return vol;
+//    }
 
     public int secondPhase() {
         int totMacroNodes = 0;
@@ -248,7 +231,6 @@ public class Louvain {
             ResourceIterator<Node> activeNodes = g.findNodes(layerLabel, layerProperty, layerCount);
             while (activeNodes.hasNext()) {
                 Node activeNode = activeNodes.next();
-                logger.info("activeNode is " + activeNode.getId());
                 long activeNodeId = activeNode.hasProperty("id") ? (int) activeNode.getProperty("id") : activeNode.getId();
                 long cId = (long) activeNode.getProperty(communityProperty);
 
@@ -258,12 +240,14 @@ public class Louvain {
             return totMacroNodes;
         }
 
+        int count = 0;
         LouvainLayer louvainLayer = louvainResult.layer(layerCount);
-        // Prendi tutti i nodi del livello corrente
+        // Get all nodes of current layer
         ResourceIterator<Node> activeNodes = g.findNodes(layerLabel, layerProperty, layerCount);
         while (activeNodes.hasNext()) {
+            if (++count % 1000 == 0)
+                logger.info("Computed " + count + " nodes");
             Node activeNode = activeNodes.next();
-            logger.info("activeNode is " + activeNode.getId());
             long activeNodeId = activeNode.hasProperty("id") ? (int) activeNode.getProperty("id") : activeNode.getId();
             long cId = (long) activeNode.getProperty(communityProperty);
 
@@ -272,7 +256,6 @@ public class Louvain {
             // Prendi il macronode associato a questa community
             Node macroNode = g.findNode(newLayerLabel, communityProperty, cId);
             if (macroNode == null) {    // Se non esiste, crealo
-                logger.info("Creating macronode for community " + cId);
                 totMacroNodes++;
                 macroNode = g.createNode(newLayerLabel);
                 macroNode.setProperty(communityProperty, cId);
@@ -281,36 +264,29 @@ public class Louvain {
 
             // Create a relationship to the original node
             activeNode.createRelationshipTo(macroNode, LouvainRels.Layer);
-            logger.info("Created -[layer] relationship between " + activeNode.getId() + " to " + macroNode.getId());
 
             activeNode.removeLabel(layerLabel);
             activeNode.removeLabel(communityLabel);
         }
 
-        GraphUtils.print(g);
 
         ResourceIterator<Node> macroNodes = g.findNodes(newLayerLabel);
         while (macroNodes.hasNext()) {
             Node macroNode = macroNodes.next();
-//            logger.info("MacroNode: "+macroNode);
 
             for (Relationship layer : macroNode.getRelationships(Direction.INCOMING, LouvainRels.Layer)) {
                 Node originalNode = layer.getOtherNode(macroNode);
-//                logger.info("OriginalNode: "+originalNode);
 
                 for (Relationship r : originalNode.getRelationships(Direction.BOTH)) {
                     if (!r.isType(LouvainRels.Layer)) {
                         Node neigh = r.getOtherNode(originalNode);
-//                        logger.info("Neigh: " + neigh);
                         Node otherMacroNode = neigh.getSingleRelationship(LouvainRels.Layer, Direction.OUTGOING).getOtherNode(neigh);
 
-//                        logger.info("OtherMacroNode: " + otherMacroNode.toString());
                         Relationship macroRel = getRelationshipBetween(macroNode, otherMacroNode, Direction.BOTH, LouvainRels.NewEdges);
                         if (macroRel == null) {
                             macroRel = macroNode.createRelationshipTo(otherMacroNode, LouvainRels.NewEdges);
                             macroRel.setProperty(weightProperty, 0.0);
                         }
-                        logger.info("Macro Rel: " + macroNode + " ---- " + otherMacroNode);
                         double w = (double) macroRel.getProperty(weightProperty);
                         macroRel.setProperty(weightProperty, w + 1.0);
 
@@ -318,11 +294,6 @@ public class Louvain {
                 }
             }
         }
-
-        GraphUtils.print(g);
-
-//        if (true)
-//            throw new RuntimeException();
 
         ResourceIterator<Node> macros = g.findNodes(newLayerLabel);
         while (macros.hasNext()) {
@@ -332,7 +303,6 @@ public class Louvain {
             next.addLabel(layerLabel);
         }
 
-        layerCount++;
         return totMacroNodes;
     }
 

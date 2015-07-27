@@ -69,4 +69,5 @@ public class LouvainTest extends InMemoryNeoTest {
 
         louvain.clean();
     }
+
 }

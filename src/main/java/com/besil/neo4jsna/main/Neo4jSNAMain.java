@@ -1,6 +1,8 @@
 package com.besil.neo4jsna.main;
 
 import com.besil.neo4jsna.algorithms.*;
+import com.besil.neo4jsna.algorithms.louvain.Louvain;
+import com.besil.neo4jsna.algorithms.louvain.LouvainResult;
 import com.besil.neo4jsna.engine.GraphAlgoEngine;
 import com.besil.neo4jsna.measures.DirectedModularity;
 import com.besil.neo4jsna.measures.UndirectedModularity;
@@ -10,6 +12,7 @@ import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
+import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.tooling.GlobalGraphOperations;
 
@@ -23,8 +26,11 @@ public class Neo4jSNAMain {
 		long nodeCount, relsCount;
 		
 		// Open a database instance
-		GraphDatabaseService g = new GraphDatabaseFactory().newEmbeddedDatabase(path);
-		try (Transaction tx = g.beginTx() ) {
+        GraphDatabaseService g = new GraphDatabaseFactory()
+                .newEmbeddedDatabaseBuilder(path)
+                .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
+                .newGraphDatabase();
+        try (Transaction tx = g.beginTx() ) {
 			nodeCount = IteratorUtil.count( GlobalGraphOperations.at(g).getAllNodes() );
 			relsCount = IteratorUtil.count( GlobalGraphOperations.at(g).getAllRelationships() );
 			tx.success();
@@ -38,8 +44,15 @@ public class Neo4jSNAMain {
 		if( args.length > 1 && args[1].equals("off") )
 			engine.disableLogging();
 
-		LabelPropagation lp = new LabelPropagation();
-		// Starts the algorithm on the given graph g
+        Louvain louvain = new Louvain(g);
+        louvain.execute();
+        LouvainResult result = louvain.getResult();
+        for (int layer : result.layers()) {
+            System.out.println("Layer " + layer + ": " + result.layer(layer).size() + " nodes");
+        }
+
+        LabelPropagation lp = new LabelPropagation();
+        // Starts the algorithm on the given graph g
 		engine.execute(lp);
 		Long2LongMap communityMap = lp.getResult();
 		long totCommunities = new LongOpenHashSet( communityMap.values() ).size();
