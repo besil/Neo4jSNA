@@ -103,7 +103,7 @@ public class Louvain {
 
     public void firstPhase() {
         int movements;
-        int countOperations = 0;
+        int counterOps = 0;
 
         Transaction tx = g.beginTx();
 
@@ -137,17 +137,10 @@ public class Louvain {
 
                 if (srcCommunity != bestCommunity) {
                     src.setProperty(communityProperty, bestCommunity);
+                    tx = this.batchCommit(++counterOps, tx, g);
                     movements++;
                 }
-
-                if (++countOperations % batchSize == 0) {
-                    logger.info("Committing...");
-                    tx.success();
-                    tx.close();
-                    tx = g.beginTx();
-                }
             }
-
             logger.info("Movements so far: " + movements);
         } while (movements != 0);
 
@@ -224,7 +217,7 @@ public class Louvain {
 
     public int secondPhase() {
         int totMacroNodes = 0;
-        int counterOps = 0;
+        long counterOps = 0;
 
         Transaction tx = g.beginTx();
 
@@ -332,6 +325,7 @@ public class Louvain {
 
     private Transaction batchCommit(long counterOps, Transaction tx, GraphDatabaseService g) {
         if (++counterOps % batchSize == 0) {
+            logger.info("Committing...");
             tx.success();
             tx.close();
             tx = g.beginTx();
