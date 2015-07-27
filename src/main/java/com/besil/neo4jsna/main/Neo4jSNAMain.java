@@ -20,9 +20,8 @@ import java.util.Optional;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
-		String database = args.length > 0 ? args[0] : "data/cineasts_12k_movies_50k_actors.db";
-		
-		String path = database;
+		String path = args.length > 0 ? args[0] : "data/cineasts_12k_movies_50k_actors.db";
+
 		long nodeCount, relsCount;
 		
 		// Open a database instance
