@@ -23,6 +23,7 @@ public class Louvain {
     private final GraphDatabaseService g;
     private final double totalEdgeWeight;
     private final LouvainResult louvainResult;
+    private final int batchSize = 250_000;
     private Label layerLabel, communityLabel, newLayerLabel;
     private IndexDefinition layerIndex, communityIndex, tmpNewLayerIndex;
     private int layerCount = 0;
@@ -64,7 +65,6 @@ public class Louvain {
             tx.success();
         }
 
-
         double edgeWeight = 0.0;
         try (Transaction tx = g.beginTx()) {
             for (Relationship r : GlobalGraphOperations.at(g).getAllRelationships()) {
@@ -105,6 +105,9 @@ public class Louvain {
 
     public void firstPhase() {
         int movements;
+        int countOperations = 0;
+
+        Transaction tx = g.beginTx();
 
         do {
             int count = 0;
@@ -141,10 +144,19 @@ public class Louvain {
                     src.setProperty(communityProperty, bestCommunity);
                     movements++;
                 }
+
+                if (++countOperations % batchSize == 0) {
+                    tx.success();
+                    tx.close();
+                    tx = g.beginTx();
+                }
             }
 
             logger.info("Movements so far: " + movements);
         } while (movements != 0);
+
+        tx.success();
+        tx.close();
     }
 
     private double calculateDelta(Node n, long srcCommunity, long dstCommunity) {
