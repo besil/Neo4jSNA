@@ -21,6 +21,7 @@ public class Louvain {
     private final String communityProperty = "community", layerProperty = "layer", weightProperty = "weight";
     private final GraphDatabaseService g;
     private final double totalEdgeWeight;
+    private final LouvainResult louvainResult;
     private Label layerLabel, communityLabel, newLayerLabel;
     private IndexDefinition layerIndex, communityIndex, tmpNewLayerIndex;
     private int layerCount;
@@ -28,6 +29,7 @@ public class Louvain {
     private int macroNodeCount = 0;
 
     public Louvain(GraphDatabaseService g) {
+        this.louvainResult = new LouvainResult();
         this.g = g;
         layerCount = 0;
         this.layerLabel = DynamicLabel.label("layerLabel");
@@ -241,16 +243,31 @@ public class Louvain {
         }
 
         if (macroNodesCommunities.size() == macroNodeCount) {
-            // Nothing to move: exit
+            // Nothing to move: save to layer object and exit
+            LouvainLayer louvainLayer = louvainResult.layer(layerCount);
+            ResourceIterator<Node> activeNodes = g.findNodes(layerLabel, layerProperty, layerCount);
+            while (activeNodes.hasNext()) {
+                Node activeNode = activeNodes.next();
+                logger.info("activeNode is " + activeNode.getId());
+                long activeNodeId = activeNode.hasProperty("id") ? (int) activeNode.getProperty("id") : activeNode.getId();
+                long cId = (long) activeNode.getProperty(communityProperty);
+
+                louvainLayer.add(activeNodeId, cId);
+            }
+
             return totMacroNodes;
         }
 
+        LouvainLayer louvainLayer = louvainResult.layer(layerCount);
         // Prendi tutti i nodi del livello corrente
         ResourceIterator<Node> activeNodes = g.findNodes(layerLabel, layerProperty, layerCount);
         while (activeNodes.hasNext()) {
             Node activeNode = activeNodes.next();
             logger.info("activeNode is " + activeNode.getId());
+            long activeNodeId = activeNode.hasProperty("id") ? (int) activeNode.getProperty("id") : activeNode.getId();
             long cId = (long) activeNode.getProperty(communityProperty);
+
+            louvainLayer.add(activeNodeId, cId);
 
             // Prendi il macronode associato a questa community
             Node macroNode = g.findNode(newLayerLabel, communityProperty, cId);
@@ -319,10 +336,6 @@ public class Louvain {
         return totMacroNodes;
     }
 
-    private boolean areRelated(Node n1, Node n2) {
-        return this.getRelationshipBetween(n1, n2, Direction.BOTH) != null;
-    }
-
     private Relationship getRelationshipBetween(Node n1, Node n2, Direction dir, RelationshipType... relTypes) {
         for (Relationship rel : n1.getRelationships(dir, relTypes)) {
             if (rel.getOtherNode(n1).equals(n2)) return rel;
@@ -331,7 +344,7 @@ public class Louvain {
     }
 
     public LouvainResult getResult() {
-        return new LouvainResult();
+        return this.louvainResult;
     }
 
     public void clean() {
