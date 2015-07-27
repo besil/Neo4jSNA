@@ -105,9 +105,9 @@ public class Louvain {
 
     public void firstPhase() {
         int movements;
-        int count = 0;
 
         do {
+            int count = 0;
             movements = 0;
             // itera solo per i nodi del livello corrente
             ResourceIterator<Node> nodes = g.findNodes(layerLabel, layerProperty, layerCount);
