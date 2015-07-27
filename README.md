@@ -13,7 +13,7 @@ The implemented algorithms are, for now:
 - [x] Triangle count
 - [ ] <a href="http://arxiv.org/pdf/0906.0612v2.pdf" target="_blank">Community Detection</a>
 	- [x] <a href="http://arxiv.org/pdf/0709.2938v1.pdf" target="_blank">Label Propagation</a>
-	- [ ] <a href="http://arxiv.org/pdf/0803.0476v2.pdf" target="_blank">Louvain Method</a>
+	- [x] <a href="http://arxiv.org/pdf/0803.0476v2.pdf" target="_blank">Louvain Method</a>
 	- [ ] <a href="http://www.michelecoscia.com/wp-content/uploads/2012/08/cosciakdd12.pdf" target="_blank">Demon</a>
 	- [x] <a href="http://arxiv.org/pdf/physics/0602124.pdf" target="_blank">Modularity</a>
 
