@@ -265,18 +265,22 @@ public class Louvain {
                 macroNode.setProperty(communityProperty, cId);
                 macroNode.setProperty(layerProperty, layerCount + 1); // e' il nuovo layer
 
-                tx = this.batchCommit(++counterOps, tx, g);
+//                tx = this.batchCommit(++counterOps, tx, g);
             }
 
             // Create a relationship to the original node
             activeNode.createRelationshipTo(macroNode, LouvainRels.Layer);
-            tx = this.batchCommit(++counterOps, tx, g);
+//            tx = this.batchCommit(++counterOps, tx, g);
 
             activeNode.removeLabel(layerLabel);
-            tx = this.batchCommit(++counterOps, tx, g);
+//            tx = this.batchCommit(++counterOps, tx, g);
             activeNode.removeLabel(communityLabel);
-            tx = this.batchCommit(++counterOps, tx, g);
+//            tx = this.batchCommit(++counterOps, tx, g);
         }
+
+        tx.success();
+        tx.close();
+        tx = g.beginTx();
 
 
         ResourceIterator<Node> macroNodes = g.findNodes(newLayerLabel);

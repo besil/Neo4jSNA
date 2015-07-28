@@ -17,26 +17,26 @@ import org.neo4j.helpers.collection.IteratorUtil;
 import org.neo4j.io.fs.FileUtils;
 import org.neo4j.tooling.GlobalGraphOperations;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.Enumeration;
 import java.util.Optional;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
         String zipFile = "data/cineasts_12k_movies_50k_actors_2.1.6.zip";
-        String path = "data/cineasts_12k_movies_50k_actors.db";
+        String path = "data/cineasts_12k_movies_50k_actors.db/";
 
         try {
             FileUtils.deleteRecursively(new File(path));
-            unZipIt(zipFile, path);
-        } catch (IOException e) {
+            extractFolder(zipFile);
+        } catch (Exception e) {
             e.printStackTrace();
-            return;
+            System.exit(1);
         }
+
         long nodeCount, relsCount;
 		
 		// Open a database instance
@@ -113,53 +113,54 @@ public class Neo4jSNAMain {
 		g.shutdown();
 	}
 
-    public static void unZipIt(String zipFile, String outputFolder) {
+    static public void extractFolder(String zipFile) throws ZipException, IOException {
+        System.out.println(zipFile);
+        int BUFFER = 2048;
+        File file = new File(zipFile);
 
-        byte[] buffer = new byte[1024];
+        ZipFile zip = new ZipFile(file);
+        String newPath = zipFile.substring(0, zipFile.length() - 4);
 
-        try {
+        new File(newPath).mkdir();
+        Enumeration zipFileEntries = zip.entries();
 
-            //create output directory is not exists
-            File folder = new File(outputFolder);
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
+        // Process each entry
+        while (zipFileEntries.hasMoreElements()) {
+            // grab a zip file entry
+            ZipEntry entry = (ZipEntry) zipFileEntries.nextElement();
+            String currentEntry = entry.getName();
+            File destFile = new File(newPath, currentEntry);
+            //destFile = new File(newPath, destFile.getName());
+            File destinationParent = destFile.getParentFile();
 
-            //get the zip file content
-            ZipInputStream zis =
-                    new ZipInputStream(new FileInputStream(zipFile));
-            //get the zipped file list entry
-            ZipEntry ze = zis.getNextEntry();
+            // create the parent directory structure if needed
+            destinationParent.mkdirs();
 
-            while (ze != null) {
+            if (!entry.isDirectory()) {
+                BufferedInputStream is = new BufferedInputStream(zip
+                        .getInputStream(entry));
+                int currentByte;
+                // establish buffer for writing file
+                byte data[] = new byte[BUFFER];
 
-                String fileName = ze.getName();
-                File newFile = new File(outputFolder + File.separator + fileName);
+                // write the current file to disk
+                FileOutputStream fos = new FileOutputStream(destFile);
+                BufferedOutputStream dest = new BufferedOutputStream(fos,
+                        BUFFER);
 
-                System.out.println("file unzip : " + newFile.getAbsoluteFile());
-
-                //create all non exists folders
-                //else you will hit FileNotFoundException for compressed folder
-                new File(newFile.getParent()).mkdirs();
-
-                FileOutputStream fos = new FileOutputStream(newFile);
-
-                int len;
-                while ((len = zis.read(buffer)) > 0) {
-                    fos.write(buffer, 0, len);
+                // read and write until last byte is encountered
+                while ((currentByte = is.read(data, 0, BUFFER)) != -1) {
+                    dest.write(data, 0, currentByte);
                 }
-
-                fos.close();
-                ze = zis.getNextEntry();
+                dest.flush();
+                dest.close();
+                is.close();
             }
 
-            zis.closeEntry();
-            zis.close();
-
-            System.out.println("Done");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            if (currentEntry.endsWith(".zip")) {
+                // found a zip file, try to open
+                extractFolder(destFile.getAbsolutePath());
+            }
         }
     }
 }
