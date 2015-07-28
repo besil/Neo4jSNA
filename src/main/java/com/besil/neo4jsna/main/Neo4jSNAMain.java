@@ -14,15 +14,30 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.helpers.collection.IteratorUtil;
+import org.neo4j.io.fs.FileUtils;
 import org.neo4j.tooling.GlobalGraphOperations;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class Neo4jSNAMain {
 	public static void main(String[] args) {
-		String path = args.length > 0 ? args[0] : "data/cineasts_12k_movies_50k_actors.db";
+        String zipFile = "data/cineasts_12k_movies_50k_actors_2.1.6.zip";
+        String path = "data/cineasts_12k_movies_50k_actors.db";
 
-		long nodeCount, relsCount;
+        try {
+            FileUtils.deleteRecursively(new File(path));
+            unZipIt(zipFile, path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
+        long nodeCount, relsCount;
 		
 		// Open a database instance
         GraphDatabaseService g = new GraphDatabaseFactory()
@@ -97,4 +112,54 @@ public class Neo4jSNAMain {
 		// Don't forget to shutdown the database
 		g.shutdown();
 	}
+
+    public static void unZipIt(String zipFile, String outputFolder) {
+
+        byte[] buffer = new byte[1024];
+
+        try {
+
+            //create output directory is not exists
+            File folder = new File(outputFolder);
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+
+            //get the zip file content
+            ZipInputStream zis =
+                    new ZipInputStream(new FileInputStream(zipFile));
+            //get the zipped file list entry
+            ZipEntry ze = zis.getNextEntry();
+
+            while (ze != null) {
+
+                String fileName = ze.getName();
+                File newFile = new File(outputFolder + File.separator + fileName);
+
+                System.out.println("file unzip : " + newFile.getAbsoluteFile());
+
+                //create all non exists folders
+                //else you will hit FileNotFoundException for compressed folder
+                new File(newFile.getParent()).mkdirs();
+
+                FileOutputStream fos = new FileOutputStream(newFile);
+
+                int len;
+                while ((len = zis.read(buffer)) > 0) {
+                    fos.write(buffer, 0, len);
+                }
+
+                fos.close();
+                ze = zis.getNextEntry();
+            }
+
+            zis.closeEntry();
+            zis.close();
+
+            System.out.println("Done");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 }
