@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Neo4jsna : ">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Neo4jsna</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/besil/Neo4jSNA">View on GitHub</a>
+
+          <h1 id="project_title">Neo4jsna</h1>
+          <h2 id="project_tagline"></h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/besil/Neo4jSNA/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/besil/Neo4jSNA/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="neo4jsna" class="anchor" href="#neo4jsna" aria-hidden="true"><span class="octicon octicon-link"></span></a>Neo4jSNA</h1>
+
+<p>Neo4jSNA is a Java based collection of useful algorithms for Social Network analysis, based on Neo4j, the graph database.
+Actually, all algorithms are implemented using the Neo4j Embedded mode.</p>
+
+<p>The project uses Maven for dependency management. The other used library is the <a href="http://fastutil.di.unimi.it/" target="_blank">fastutil project</a>:
+if you don't know it yet, you should definitely check it.</p>
+
+<p>The implemented algorithms are, for now:</p>
+
+<ul>
+<li>[x] <a href="http://en.wikipedia.org/wiki/PageRank" target="_blank">PageRank</a>:</li>
+<li>[x] Connected Components</li>
+<li>[x] Triangle count</li>
+<li>[ ] <a href="http://arxiv.org/pdf/0906.0612v2.pdf" target="_blank">Community Detection</a>
+
+<ul>
+<li>[x] <a href="http://arxiv.org/pdf/0709.2938v1.pdf" target="_blank">Label Propagation</a>
+</li>
+<li>[x] <a href="http://arxiv.org/pdf/0803.0476v2.pdf" target="_blank">Louvain Method</a>
+</li>
+<li>[ ] <a href="http://www.michelecoscia.com/wp-content/uploads/2012/08/cosciakdd12.pdf" target="_blank">Demon</a>
+</li>
+<li>[x] <a href="http://arxiv.org/pdf/physics/0602124.pdf" target="_blank">Modularity</a>
+</li>
+</ul>
+</li>
+</ul>
+
+<h1>
+<a id="quickstart" class="anchor" href="#quickstart" aria-hidden="true"><span class="octicon octicon-link"></span></a>QuickStart</h1>
+
+<div class="highlight highlight-Java"><pre><span class="pl-smi">String</span> path <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>data/tmp/cineasts<span class="pl-pds">"</span></span>;
+
+<span class="pl-c">// Open a database instance</span>
+<span class="pl-smi">GraphDatabaseService</span> g <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">GraphDatabaseFactory</span>()<span class="pl-k">.</span>newEmbeddedDatabase(path);
+
+<span class="pl-c">// Declare the GraphAlgoEngine on the database instance</span>
+<span class="pl-smi">GraphAlgoEngine</span> engine <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">GraphAlgoEngine</span>(g);
+
+<span class="pl-smi">LabelPropagation</span> lp <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">LabelPropagation</span>();
+<span class="pl-c">// Starts the algorithm on the given graph g</span>
+engine<span class="pl-k">.</span>execute(lp);
+<span class="pl-smi">Long2LongMap</span> communityMap <span class="pl-k">=</span> lp<span class="pl-k">.</span>getResult();
+<span class="pl-k">long</span> totCommunities <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">LongOpenHashSet</span>( communityMap<span class="pl-k">.</span>values() )<span class="pl-k">.</span>size();
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>There are <span class="pl-pds">"</span></span><span class="pl-k">+</span>totCommunities<span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">"</span> communities according to Label Propagation<span class="pl-pds">"</span></span>);
+
+<span class="pl-smi">DirectedModularity</span> modularity <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">DirectedModularity</span>(g);
+engine<span class="pl-k">.</span>execute(modularity);
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>The directed modularity of this network is <span class="pl-pds">"</span></span><span class="pl-k">+</span>modularity<span class="pl-k">.</span>getResult());
+
+<span class="pl-smi">UndirectedModularity</span> umodularity <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">UndirectedModularity</span>(g);
+engine<span class="pl-k">.</span>execute(umodularity);
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>The undirected modularity of this network is <span class="pl-pds">"</span></span><span class="pl-k">+</span>umodularity<span class="pl-k">.</span>getResult());
+
+<span class="pl-smi">TriangleCount</span> tc <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">TriangleCount</span>();
+engine<span class="pl-k">.</span>execute(tc);
+<span class="pl-smi">Long2LongMap</span> triangleCount <span class="pl-k">=</span> tc<span class="pl-k">.</span>getResult();
+<span class="pl-k">Optional&lt;<span class="pl-smi">Long</span>&gt;</span> totalTriangles <span class="pl-k">=</span> triangleCount<span class="pl-k">.</span>values()<span class="pl-k">.</span>stream()<span class="pl-k">.</span>reduce( (x, y) <span class="pl-k">-</span><span class="pl-k">&gt;</span> x <span class="pl-k">+</span> y );
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>There are <span class="pl-pds">"</span></span><span class="pl-k">+</span>totalTriangles<span class="pl-k">.</span>get()<span class="pl-k">+</span><span class="pl-s"><span class="pl-pds">"</span> triangles<span class="pl-pds">"</span></span>);
+
+<span class="pl-smi">PageRank</span> pr <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">PageRank</span>(g);
+engine<span class="pl-k">.</span>execute(pr);
+<span class="pl-smi">Long2DoubleMap</span> ranks <span class="pl-k">=</span> pr<span class="pl-k">.</span>getResult();
+<span class="pl-k">Optional&lt;<span class="pl-smi">Double</span>&gt;</span> res <span class="pl-k">=</span> ranks<span class="pl-k">.</span>values()<span class="pl-k">.</span>parallelStream()<span class="pl-k">.</span>reduce( (x, y) <span class="pl-k">-</span><span class="pl-k">&gt;</span> x <span class="pl-k">+</span> y );
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>Check PageRank sum is 1.0: <span class="pl-pds">"</span></span><span class="pl-k">+</span> res<span class="pl-k">.</span>get());
+
+<span class="pl-smi">ConnectedComponents</span> cc <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">ConnectedComponents</span>();
+engine<span class="pl-k">.</span>execute(cc);
+<span class="pl-smi">Long2LongMap</span> components <span class="pl-k">=</span> cc<span class="pl-k">.</span>getResult();
+<span class="pl-k">int</span> totalComponents <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">LongOpenHashSet</span>( components<span class="pl-k">.</span>values() )<span class="pl-k">.</span>size();
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>There are <span class="pl-pds">"</span></span><span class="pl-k">+</span> totalComponents<span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span> different connected components<span class="pl-pds">"</span></span>);
+
+<span class="pl-smi">StronglyConnectedComponents</span> scc <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">StronglyConnectedComponents</span>();
+engine<span class="pl-k">.</span>execute(cc);
+components <span class="pl-k">=</span> scc<span class="pl-k">.</span>getResult();
+totalComponents <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-smi">LongOpenHashSet</span>( components<span class="pl-k">.</span>values() )<span class="pl-k">.</span>size();
+<span class="pl-smi">System</span><span class="pl-k">.</span>out<span class="pl-k">.</span>println(<span class="pl-s"><span class="pl-pds">"</span>There are <span class="pl-pds">"</span></span><span class="pl-k">+</span> totalComponents<span class="pl-k">+</span> <span class="pl-s"><span class="pl-pds">"</span> different strongly connected components<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Don't forget to shutdown the database</span>
+g<span class="pl-k">.</span>shutdown();</pre></div>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Neo4jsna maintained by <a href="https://github.com/besil">besil</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
