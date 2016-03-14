@@ -14,18 +14,14 @@ import org.neo4j.test.TestGraphDatabaseFactory;
  * Created by besil on 27/05/15.
  */
 public abstract class InMemoryNeoTest {
-    protected static GraphDatabaseService db;
+    protected GraphDatabaseService db;
     protected Int2ObjectMap<Node> nodes;
-
-    @BeforeClass
-    public static void setUpClass() {
-        db = new TestGraphDatabaseFactory().newImpermanentDatabase();
-    }
 
     protected abstract void initGraph();
 
     @Before
     public void setUp() {
+        db = new TestGraphDatabaseFactory().newImpermanentDatabase();
         try (Transaction tx = db.beginTx()) {
             this.initGraph();
             tx.success();

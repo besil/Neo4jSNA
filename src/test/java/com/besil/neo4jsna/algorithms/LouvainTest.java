@@ -9,6 +9,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Transaction;
 
 /**
  * Created by besil on 7/24/15.
@@ -50,24 +51,26 @@ public class LouvainTest extends InMemoryNeoTest {
 
     @Test
     public void louvain() {
-        Louvain louvain = new Louvain(db);
-        louvain.execute();
+            Louvain louvain = new Louvain(db);
+            louvain.execute();
+        try (Transaction tx = db.beginTx()) {
 
-        LouvainResult lResult = louvain.getResult();
+            LouvainResult lResult = louvain.getResult();
 
-        LouvainLayer layer = lResult.layer(0);
-        System.out.println(layer.getNode2CommunityMap());
-        Assert.assertEquals(layer.size(), 9);
+            LouvainLayer layer = lResult.layer(0);
+            System.out.println(layer.getNode2CommunityMap());
+            Assert.assertEquals(layer.size(), 9);
 
-        layer = lResult.layer(1);
-        System.out.println(layer.getNode2CommunityMap());
-        Assert.assertEquals(layer.size(), 3);
+            layer = lResult.layer(1);
+            System.out.println(layer.getNode2CommunityMap());
+            Assert.assertEquals(layer.size(), 3);
 
-        layer = lResult.layer(2);
-        System.out.println(layer.getNode2CommunityMap());
-        Assert.assertEquals(layer.size(), 0);
+            layer = lResult.layer(2);
+            System.out.println(layer.getNode2CommunityMap());
+            Assert.assertEquals(layer.size(), 0);
+        }
 
-        louvain.clean();
+            louvain.clean();
     }
 
 }

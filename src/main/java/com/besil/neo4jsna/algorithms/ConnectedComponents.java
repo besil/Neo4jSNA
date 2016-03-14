@@ -9,7 +9,7 @@ import org.neo4j.graphdb.Relationship;
 
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 
-public class ConnectedComponents implements VertexAlgorithm {
+public class ConnectedComponents implements VertexAlgorithm<Long2LongMap> {
 	protected Long2LongMap componentsMap;
 	protected String attName = "ConnectedComponents";
 	protected Direction direction;

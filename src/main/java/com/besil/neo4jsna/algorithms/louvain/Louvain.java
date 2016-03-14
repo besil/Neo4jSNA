@@ -30,9 +30,6 @@ public class Louvain {
     private int macroNodeCount = 0;
 
     public Louvain(GraphDatabaseService g) {
-        for (Handler h : Logger.getLogger("").getHandlers())
-            h.setLevel(Level.INFO);
-
         this.louvainResult = new LouvainResult();
         this.g = g;
         this.layerLabel = DynamicLabel.label("layerLabel");
@@ -252,7 +249,12 @@ public class Louvain {
             if (++count % 1000 == 0)
                 logger.info("Computed " + count + " nodes");
             Node activeNode = activeNodes.next();
-            long activeNodeId = activeNode.hasProperty("id") ? Long.parseLong((String) activeNode.getProperty("id")) : activeNode.getId();
+            long activeNodeId;
+            if (activeNode.hasProperty("id")) {
+                Object id = activeNode.getProperty("id");
+                activeNodeId = id instanceof Number ? ((Number)id).longValue() : Long.parseLong(id.toString());
+            }
+            else activeNodeId = activeNode.getId();
             long cId = (long) activeNode.getProperty(communityProperty);
 
             louvainLayer.add(activeNodeId, cId);
