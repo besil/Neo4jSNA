@@ -13,7 +13,7 @@ import java.util.Iterator;
 /**
  * Created by besil on 26/05/15.
  */
-public class Demon implements SingleNodeScanAlgorithm {
+public class Demon implements SingleNodeScanAlgorithm<Long2LongMap> {
     public static final Label DemonLabel = DynamicLabel.label("DEMON_NODE");
     private final GraphDatabaseService db;
     private final GraphAlgoEngine engine;
@@ -29,8 +29,6 @@ public class Demon implements SingleNodeScanAlgorithm {
     public void compute(Node ego) {
         this.executeEgoMinusEgo(ego);
         engine.execute(lp, DemonLabel);
-
-        Long2LongMap communities = lp.getResult();
     }
 
     public void executeEgoMinusEgo(Node root) {
@@ -111,8 +109,8 @@ public class Demon implements SingleNodeScanAlgorithm {
     }
 
     @Override
-    public Object getResult() {
-        return null;
+    public Long2LongMap getResult() {
+        return lp.getResult();
     }
 
     public static enum DemonRelType implements RelationshipType {DEMON_RELTYPE;}

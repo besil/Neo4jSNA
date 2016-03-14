@@ -9,7 +9,7 @@ import org.neo4j.graphdb.RelationshipType;
 
 import java.util.Map.Entry;
 
-public class LabelPropagation implements VertexAlgorithm {
+public class LabelPropagation implements VertexAlgorithm<Long2LongMap> {
     protected final String attName = "community";
     protected final RelationshipType relType;
     protected Long2LongMap communityMap;

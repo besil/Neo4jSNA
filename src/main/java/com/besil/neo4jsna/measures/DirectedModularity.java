@@ -10,7 +10,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import com.besil.neo4jsna.engine.algorithm.SingleNodeScanAlgorithm;
 import com.besil.neo4jsna.engine.algorithm.SingleRelationshipScanAlgorithm;
 
-public class DirectedModularity implements SingleNodeScanAlgorithm, SingleRelationshipScanAlgorithm {
+public class DirectedModularity implements SingleNodeScanAlgorithm<Double>, SingleRelationshipScanAlgorithm<Double> {
 	protected final String attName = "community";
 	protected double eii=0.0, ai=0.0;
 	protected double divisor = 0.0;

@@ -11,7 +11,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 
 import com.besil.neo4jsna.engine.algorithm.VertexAlgorithm;
 
-public class PageRank implements VertexAlgorithm {
+public class PageRank implements VertexAlgorithm<Long2DoubleMap> {
 	protected final String attName = "PageRank";
 	protected Long2DoubleMap rankMap;
 	protected long nodeCount = 0;

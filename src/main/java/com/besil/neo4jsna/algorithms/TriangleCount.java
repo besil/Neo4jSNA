@@ -1,13 +1,14 @@
 package com.besil.neo4jsna.algorithms;
 
 import com.besil.neo4jsna.engine.algorithm.CypherAlgorithm;
+import it.unimi.dsi.fastutil.longs.Long2DoubleMap;
 import it.unimi.dsi.fastutil.longs.Long2LongMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import org.neo4j.graphdb.Result;
 
 import java.util.Map;
 
-public class TriangleCount implements CypherAlgorithm {
+public class TriangleCount implements CypherAlgorithm<Long2LongMap> {
     protected Long2LongMap triangleMap;
 
     public TriangleCount() {
